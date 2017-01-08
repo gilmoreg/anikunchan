@@ -19,8 +19,10 @@ const queryAnilist = function(query) {
 	$.post(anilistAuthTokenPost, function(data) {
 		const anilistAccessToken = '?access_token=' + data.access_token;
 		// GET with token
+		console.log(anilistCharSearch + query + anilistAccessToken);
 		$.get(anilistCharSearch + query + anilistAccessToken, function(data) {
 			const characterID = data[0].id; // assuming for now first result is the best one
+
 			// GET full page data with ID
 			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, function(data) {
 				renderAnilistCharacterData(data);
@@ -47,7 +49,7 @@ const queryAnilist = function(query) {
 	from the anilist API, and it introduces many more points of failure (there are likely many anilist pages which do not have a wikia page)
 	Using YQL seems...distasteful
 	But if the point is simply to show off some flexibility as a developer, I am willing to keep it
-*/
+
 const queryWikia = function(query) {
 	const wikiaEndPoint = 'https://www.wikia.com/api/v1/Search';
 	const wikiaCrossWikiEndPoint = wikiaEndPoint + '/CrossWiki?expand=1&limit=1&query=';
@@ -79,7 +81,7 @@ const queryWikia = function(query) {
 
 	});
 }
-
+*/
 const queryImgurGallery = function(query) {	
   const settings = {
     'async': true,
@@ -92,6 +94,7 @@ const queryImgurGallery = function(query) {
   }
 
   $.ajax(settings).done(function(response) { 
+  	console.log('imgur',response);
     let results = [];
     let albumPromises = [];
     
@@ -100,7 +103,10 @@ const queryImgurGallery = function(query) {
         albumPromises.push(queryImgurAlbum(i.id));
       }
       else {
-        results.push(i.link);
+        results.push( {
+        	'link': i.link,
+    		'alt': i.title
+    	});
       }
     });
     
@@ -134,7 +140,10 @@ const queryImgurAlbum = function(id) {
 const getImgurAlbumLinks = function(album) {
   let links = [];
   album.forEach((l) => {
-    links.push(l.link);
+    links.push( { 
+    	'link': l.link,
+    	'alt': l.title
+    });
   });
   return links;
 }
@@ -157,11 +166,12 @@ const renderAnilistCharacterData = function(data) {
 	});
 				
 }
-
+/*
 const renderWikiaCharacterData = function(data) {
 	$('.description').html(data.query.results.json.items.snippet)
 		.append(' (Source: <a href="' + data.query.results.json.items.url + '" target="_blank">wikia.com</a>)');
 }
+*/
 
 const renderImgurData = function(data) {
 	// 0-index for simplicity
@@ -177,11 +187,9 @@ const renderImgurData = function(data) {
 	
 }
 
-
-
 $(document).ready(function() {
-	const query = encodeURIComponent('rintarou okabe');
+	const query = encodeURIComponent('emilia');
 	queryAnilist(query);
-	queryWikia(query);
-	queryImgurGallery(query);
+	//queryWikia(encodeURIComponent('emilia re:zero'));
+	queryImgurGallery(encodeURIComponent('emilia re zero'));
 });
