@@ -80,23 +80,63 @@ const queryWikia = function(query) {
 	});
 }
 
-const queryImgur = function(query) {	
-	const settings = {
-		'async': true,
-		'crossDomain': true,
-		'url': 'https://api.imgur.com/3/gallery/search/top/?q=' + query,
-		'method': 'GET',
-		'headers': {
-			'authorization': 'Client-ID 78110c84cc38ed3'
-		}
-	}
+const queryImgurGallery = function(query) {	
+  const settings = {
+    'async': true,
+    'crossDomain': true,
+    'url': 'https://api.imgur.com/3/gallery/search/top/?q=' + query,
+    'method': 'GET',
+    'headers': {
+      'authorization': 'Client-ID 78110c84cc38ed3'
+    }
+  }
 
-	$.ajax(settings).done(function (response) {
-		console.log(response);
-		// Getting 16 results, no way to get fewer it looks like
-		// So I'd have to do the pagination myself?
-		renderImgurData(response.data);
-	});
+  $.ajax(settings).done(function(response) { 
+    let results = [];
+    let albumPromises = [];
+    
+    response.data.forEach(function(i) {
+      if(i.is_album) {
+        albumPromises.push(queryImgurAlbum(i.id));
+      }
+      else {
+        results.push(i.link);
+      }
+    });
+    
+    if(albumPromises.length>0) {
+      Promise.all(albumPromises).then((aLinks) => {
+        aLinks.forEach((a) => {
+          results.push.apply(results, getImgurAlbumLinks(a.data));
+        });
+        renderImgurData(results);
+      }).catch((error) => { alert(error); });
+    }
+    else {
+      renderImgurData(results);
+    }
+  });	
+}
+
+const queryImgurAlbum = function(id) {
+	const settings = {
+	    'async': true,
+	    'crossDomain': true,
+	    'url': 'https://api.imgur.com/3/album/' + id + '/images',
+	    'method': 'GET',
+	    'headers': {
+	      'authorization': 'Client-ID 78110c84cc38ed3'
+	    }
+  	}
+  	return $.ajax(settings); // returns a Promise object
+}
+
+const getImgurAlbumLinks = function(album) {
+  let links = [];
+  album.forEach((l) => {
+    links.push(l.link);
+  });
+  return links;
 }
 
 const renderAnilistCharacterData = function(data) {
@@ -127,18 +167,21 @@ const renderImgurData = function(data) {
 	// 0-index for simplicity
 	window.imgurPage = 0;
 	const index = window.imgurPage*6;
-	// <div class="imgurpic red"><img src="https://i.ytimg.com/vi/8Sh_l-GZy1M/default.jpg" alt="shinobu">1
 	let html = '';
+	//console.log(data);
 	for(let i=index;i<index+6; i++) {
+		if(i>=data.length) break;
 		html += '<div class="imgurpic red"><img src="' + data[i].link + '" alt="' + data[i].title + '"></div>';
 	}
 	$('.imgurpics').html(html);
 	
 }
 
+
+
 $(document).ready(function() {
-	const query = encodeURIComponent('shinobu oshino');
+	const query = encodeURIComponent('rintarou okabe');
 	queryAnilist(query);
 	queryWikia(query);
-	queryImgur(query);
+	queryImgurGallery(query);
 });

@@ -69,13 +69,14 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   display: inline-block;
   margin-right: -0.2em; /* clearfix */
   width: 33.33%;
-  height: 100px; 
+  height: 200px; 
 }
 
 /* Can I combine these two into a single selector? .imgurpic,.ytvid img {} doesn't work */
 .imgurpic img {
   padding-top: 10%;
-  width: 80%;
+  width: 90%;
+  height: 100%;
   object-fit: scale-down;
 }
 
