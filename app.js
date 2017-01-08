@@ -4,18 +4,14 @@
  	Also the only way I know of not putting my client secret in a public repo is by doing it server side, which
  	is impossible here; can anything be done?
 */  
-const anilistEndPoint = 'https://anilist.co/api/';
-const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-const anilistCharSearch = anilistEndPoint + 'character/search/';
-const anilistCharPage = anilistEndPoint + '';
-
-const wikiaEndPoint = 'https://www.wikia.com/api/v1/Search';
-const wikiaCrossWikiEndPoint = wikiaEndPoint + '/CrossWiki?expand=1&limit=1&query=';
-
 
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
 const queryAnilist = function(query) {
+	const anilistEndPoint = 'https://anilist.co/api/';
+	const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
+	const anilistCharSearch = anilistEndPoint + 'character/search/';
+	const anilistCharPage = anilistEndPoint + '';
 	// Send POST to anilist API for client credentials token
 	// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 	// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
@@ -53,6 +49,8 @@ const queryAnilist = function(query) {
 	But if the point is simply to show off some flexibility as a developer, I am willing to keep it
 */
 const queryWikia = function(query) {
+	const wikiaEndPoint = 'https://www.wikia.com/api/v1/Search';
+	const wikiaCrossWikiEndPoint = wikiaEndPoint + '/CrossWiki?expand=1&limit=1&query=';
 	// Cross search all Wikis to get the most relevant one
 	// Using YQL to get around Wikia's lack of support for CORS or JSONP
 	// This method requires + instead of whitespace (though this is already URI encoded, so what gives?)
@@ -82,6 +80,23 @@ const queryWikia = function(query) {
 	});
 }
 
+const queryImgur = function(query, page) {
+	const settings = {
+		'async': true,
+		'crossDomain': true,
+		'url': 'https://api.imgur.com/3/gallery/search/top/' + page + ' ?q=' + query,
+		'method': 'GET',
+		'headers': {
+			'authorization': 'Client-ID 78110c84cc38ed3'
+		}
+	}
+
+	$.ajax(settings).done(function (response) {
+		console.log(response);
+		renderImgurData(response.data);
+	});
+}
+
 const renderAnilistCharacterData = function(data) {
 	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
 	$('.char-name').html(data.name_first + ' ' + data.name_last);
@@ -90,7 +105,8 @@ const renderAnilistCharacterData = function(data) {
 	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
 	// Stretch goal: show excluded text when hovered over (as anilist does)
 	// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-	$('.long-description').html(data.info.replace(/~!.*?!~*/g, '').replace(/[<]br[^>]*[>]/gi,'')) // also removes line breaks
+	$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
+		.replace(/[<]br[^>]*[>]/gi,'')) // remove line breaks
 		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
 	
 	$('.appears-in').empty();
@@ -101,13 +117,17 @@ const renderAnilistCharacterData = function(data) {
 }
 
 const renderWikiaCharacterData = function(data) {
-	console.log(data);
 	$('.description').html(data.query.results.json.items.snippet)
-				.append(' (Source: <a href="' + data.query.results.json.items.url + '" target="_blank">wikia.com</a>)');
+		.append(' (Source: <a href="' + data.query.results.json.items.url + '" target="_blank">wikia.com</a>)');
+}
+
+const renderImgurData = function(data) {
+	$('.twpic').html('<img src="' + data[0].link + '" alt="' + data[0].title + '">');
 }
 
 $(document).ready(function() {
 	const query = encodeURIComponent('shinobu oshino');
 	queryAnilist(query);
 	queryWikia(query);
+	queryImgur(query,0);
 });
