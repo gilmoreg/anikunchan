@@ -21,9 +21,13 @@ const queryAnilist = function(query) {
 		// GET with token
 		$.get(anilistCharSearch + encodeURIComponent(query) + '?access_token=' + anilistAccessToken, function(data) {
 			const characterID = data[0].id;
+			console.log(data);
 			// GET full page data with ID
 			$.get(anilistEndPoint + 'character/' + characterID + '/page?access_token=' + anilistAccessToken, function(data) {
 				console.log(data);
+				// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
+				// Stretch goal: show excluded text when hovered over (as anilist does)
+				$('.long-description').html(data.info.replace(/~!.*?!~*/g, ''));
 				return data;
 			})
 			.fail(function(response) {
@@ -44,5 +48,5 @@ const queryAnilist = function(query) {
 }
 
 $(document).ready(function() {
-	queryAnilist("shinobu oshino");
+	const characterData = queryAnilist("shinobu oshino");
 });
