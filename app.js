@@ -46,27 +46,33 @@ const queryAnilist = function(query) {
 	});
 }
 
+/*
+	I am beginning to think this is more trouble than it's worth - all I get from wikia is a snippet summary, much of the info is repeated
+	from the anilist API, and it introduces many more points of failure (there are likely many anilist pages which do not have a wikia page)
+	Using YQL seems...distasteful
+	But if the point is simply to show off some flexibility as a developer, I am willing to keep it
+*/
 const queryWikia = function(query) {
 	// Cross search all Wikis to get the most relevant one
-	// Using YML to get around Wikia's lack of support for CORS or JSONP
-	const ymlQuery = 'select * from json where url="http://www.wikia.com/api/v1/Search/CrossWiki?expand=1&lang=en&limit=1&batch=1&query=' + query + '"';
-	console.log(ymlQuery);
+	// Using YQL to get around Wikia's lack of support for CORS or JSONP
+	// This method requires + instead of whitespace (though this is already URI encoded, so what gives?)
+	query = query.replace(/([\s])+/g, '+');
+	const yqlQuery = 'select * from json where url="http://www.wikia.com/api/v1/Search/CrossWiki?expand=1&lang=en&limit=1&batch=1&query=' + query + '"';
 	$.ajax({
 		url: "https://query.yahooapis.com/v1/public/yql",
 	 	data: { 
-	 		q: ymlQuery,
+	 		q: yqlQuery,
 	 		format : "json" 
 	 	}
 	}).done(function(response) {
-		//console.log(response.query.results.json);
+		// Search the most relevant specific wiki for its page on that character
 		const wikiSearch = response.query.results.json.items.url + 'api/v1/Search/List?limit=1&minArticleQuality=10&batch=1&namespaces=0%2C14&query=' + query;
-		const ymlQuery = 'select * from json where url="' + response.query.results.json.items.url + 
+		const yqlQuery = 'select * from json where url="' + response.query.results.json.items.url + 
 			'api/v1/Search/List?limit=1&minArticleQuality=10&batch=1&namespaces=0%2C14&query=' + query + '"';
-		// http://www.wikia.com/api/v1/Search/CrossWiki?expand=1&lang=en&limit=1&batch=1&query=' + query + '"';
 		$.ajax({
 			url: "https://query.yahooapis.com/v1/public/yql",
 		 	data: { 
-		 		q: ymlQuery,
+		 		q: yqlQuery,
 		 		format : "json" 
 		 	}
 		}).done(function(response) { 			
@@ -95,12 +101,13 @@ const renderAnilistCharacterData = function(data) {
 }
 
 const renderWikiaCharacterData = function(data) {
+	console.log(data);
 	$('.description').html(data.query.results.json.items.snippet)
 				.append(' (Source: <a href="' + data.query.results.json.items.url + '" target="_blank">wikia.com</a>)');
 }
 
 $(document).ready(function() {
-	const query = encodeURIComponent('rintarou okabe');
+	const query = encodeURIComponent('shinobu oshino');
 	queryAnilist(query);
-	queryWikia('rintarou+okabe');
+	queryWikia(query);
 });
