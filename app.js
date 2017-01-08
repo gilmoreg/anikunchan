@@ -25,10 +25,7 @@ const queryAnilist = function(query) {
 			// GET full page data with ID
 			$.get(anilistEndPoint + 'character/' + characterID + '/page?access_token=' + anilistAccessToken, function(data) {
 				console.log(data);
-				// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
-				// Stretch goal: show excluded text when hovered over (as anilist does)
-				$('.long-description').html(data.info.replace(/~!.*?!~*/g, ''));
-				return data;
+				renderAnilistCharacterData(data);
 			})
 			.fail(function(response) {
 				// TODO: something more sophisticated for error handling
@@ -47,6 +44,25 @@ const queryAnilist = function(query) {
 	});
 }
 
+const renderAnilistCharacterData = function(data) {
+	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
+	$('.char-name').html(data.name_first + ' ' + data.name_last);
+	$('.jpn-char-name').html(data.name_japanese);
+	$('.alt-char-name').html(data.name_alt);
+	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
+	// Stretch goal: show excluded text when hovered over (as anilist does)
+	// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
+	// Also removes double whitespace that shows up in some descriptions
+	$('.description').html(data.info.replace(/~!.*?!~*/g, '').replace(/^\s+|\s+$/g,'').replace(/\s+/g,' '))
+		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
+	
+	$('.appears-in').empty();
+	data.anime.forEach(function(anime) {
+		$('.appears-in').append('<li><a href="http://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+	});
+				
+}
+
 $(document).ready(function() {
-	const characterData = queryAnilist("shinobu oshino");
+	queryAnilist("rintarou okabe");
 });
