@@ -7,7 +7,7 @@
 const anilistEndPoint = 'https://anilist.co/api/';
 const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
 const anilistCharSearch = anilistEndPoint + 'character/search/';
-const anilistCharPage = anilistEndPoint + ''
+const anilistCharPage = anilistEndPoint + '';
 
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
@@ -17,13 +17,13 @@ const queryAnilist = function(query) {
 	// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
 	// time constraints force me to simply fetch a new one with each search for now
 	$.post(anilistAuthTokenPost, function(data) {
-		const anilistAccessToken = data.access_token;
+		const anilistAccessToken = '?access_token=' + data.access_token;
 		// GET with token
-		$.get(anilistCharSearch + encodeURIComponent(query) + '?access_token=' + anilistAccessToken, function(data) {
-			const characterID = data[0].id;
+		$.get(anilistCharSearch + encodeURIComponent(query) + anilistAccessToken, function(data) {
+			const characterID = data[0].id; // assuming for now first result is the best one
 			console.log(data);
 			// GET full page data with ID
-			$.get(anilistEndPoint + 'character/' + characterID + '/page?access_token=' + anilistAccessToken, function(data) {
+			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, function(data) {
 				console.log(data);
 				renderAnilistCharacterData(data);
 			})
