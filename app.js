@@ -9,6 +9,10 @@ const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=cli
 const anilistCharSearch = anilistEndPoint + 'character/search/';
 const anilistCharPage = anilistEndPoint + '';
 
+const wikiaEndPoint = 'https://www.wikia.com/api/v1/Search';
+const wikiaCrossWikiEndPoint = wikiaEndPoint + '/CrossWiki?expand=1&limit=1&query=';
+
+
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
 const queryAnilist = function(query) {
@@ -19,12 +23,10 @@ const queryAnilist = function(query) {
 	$.post(anilistAuthTokenPost, function(data) {
 		const anilistAccessToken = '?access_token=' + data.access_token;
 		// GET with token
-		$.get(anilistCharSearch + encodeURIComponent(query) + anilistAccessToken, function(data) {
+		$.get(anilistCharSearch + query + anilistAccessToken, function(data) {
 			const characterID = data[0].id; // assuming for now first result is the best one
-			console.log(data);
 			// GET full page data with ID
 			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, function(data) {
-				console.log(data);
 				renderAnilistCharacterData(data);
 			})
 			.fail(function(response) {
@@ -44,6 +46,36 @@ const queryAnilist = function(query) {
 	});
 }
 
+const queryWikia = function(query) {
+	// Cross search all Wikis to get the most relevant one
+	// Using YML to get around Wikia's lack of support for CORS or JSONP
+	const ymlQuery = 'select * from json where url="http://www.wikia.com/api/v1/Search/CrossWiki?expand=1&lang=en&limit=1&batch=1&query=' + query + '"';
+	console.log(ymlQuery);
+	$.ajax({
+		url: "https://query.yahooapis.com/v1/public/yql",
+	 	data: { 
+	 		q: ymlQuery,
+	 		format : "json" 
+	 	}
+	}).done(function(response) {
+		//console.log(response.query.results.json);
+		const wikiSearch = response.query.results.json.items.url + 'api/v1/Search/List?limit=1&minArticleQuality=10&batch=1&namespaces=0%2C14&query=' + query;
+		const ymlQuery = 'select * from json where url="' + response.query.results.json.items.url + 
+			'api/v1/Search/List?limit=1&minArticleQuality=10&batch=1&namespaces=0%2C14&query=' + query + '"';
+		// http://www.wikia.com/api/v1/Search/CrossWiki?expand=1&lang=en&limit=1&batch=1&query=' + query + '"';
+		$.ajax({
+			url: "https://query.yahooapis.com/v1/public/yql",
+		 	data: { 
+		 		q: ymlQuery,
+		 		format : "json" 
+		 	}
+		}).done(function(response) { 			
+			renderWikiaCharacterData(response);
+		});
+
+	});
+}
+
 const renderAnilistCharacterData = function(data) {
 	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
 	$('.char-name').html(data.name_first + ' ' + data.name_last);
@@ -52,7 +84,7 @@ const renderAnilistCharacterData = function(data) {
 	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
 	// Stretch goal: show excluded text when hovered over (as anilist does)
 	// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-	$('.description').html(data.info.replace(/~!.*?!~*/g, '').replace(/[<]br[^>]*[>]/gi,'')) // also removes line breaks
+	$('.long-description').html(data.info.replace(/~!.*?!~*/g, '').replace(/[<]br[^>]*[>]/gi,'')) // also removes line breaks
 		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
 	
 	$('.appears-in').empty();
@@ -62,7 +94,13 @@ const renderAnilistCharacterData = function(data) {
 				
 }
 
+const renderWikiaCharacterData = function(data) {
+	$('.description').html(data.query.results.json.items.snippet)
+				.append(' (Source: <a href="' + data.query.results.json.items.url + '" target="_blank">wikia.com</a>)');
+}
+
 $(document).ready(function() {
-	const query = "rintarou okabe";
+	const query = encodeURIComponent('rintarou okabe');
 	queryAnilist(query);
+	queryWikia('rintarou+okabe');
 });
