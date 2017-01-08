@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+	font-family: Roboto;
+}
+
+nav {
+	background-color: lightgrey;
+	padding: 5px;
+	font-size: 22px;
+}
+
+nav .logo {
+	font-style: italic;
+	outline: 1px solid red;
+}
+
+nav .search-box {
+	text-align: right;
+	outline: 1px solid orange;
+}
+
+nav input {
+	width: 80%;
+}
+
+.infoblock {
+  /* Keeping this here for now - remove later */
+  outline: 1px solid black;
+}
+
+.portrait h1,h5 {
+	padding-left: 20px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+.portrait .description {
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.portrait-image {
+	text-align: center;
+}
+
+.appears-in, .links, .summary, .twitter-pics, .youtube-videos {
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+.summary h2 {
+  margin-bottom: 0px;
+}
+
+.nav-arrow {
+  /* These are temporary values - need a more accurate solution */
+  padding-top: 15%;
+  padding-bottom: 15%;
+  text-align: center;
+  color: grey;
+}
+
+/* I want the container that holds these images to be responsive, but not the inner contents, so I am doing this manually rather than using col-x classes 
+TODO: make a separate class like f-col-3 for this (making sure the [class*="col-"] doesn't select it) */
+.twpic, .ytvid {
+  text-align: center;
+  padding-top: 0px;
+  padding-bottom: 20px;
+  display: inline-block;
+  margin-right: -0.2em; /* clearfix */
+  width: 33.33%; 
+}
+
+/* Can I combine these two into a single selector? .twpic,.ytvid img {} doesn't work */
+.twpic img {
+  padding-top: 10%;
+  width: 80%;
+}
+
+.ytvid img {
+  padding-top: 10%;
+  width: 80%;
+}
+
+.links ul {
+  list-style-type: none;
+}
+
+.links li::before {
+  content: " - ";
+}
+
+.links li {
+  display: inline;
+}
+
+.red {
+  outline: 1px solid red;
+}
+
+.green {
+  outline: 1px solid green;
+}
+
+.black {
+  outline: 1px solid black;
+}
