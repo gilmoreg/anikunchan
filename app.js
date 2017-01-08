@@ -80,11 +80,11 @@ const queryWikia = function(query) {
 	});
 }
 
-const queryImgur = function(query, page) {
+const queryImgur = function(query) {	
 	const settings = {
 		'async': true,
 		'crossDomain': true,
-		'url': 'https://api.imgur.com/3/gallery/search/top/' + page + ' ?q=' + query,
+		'url': 'https://api.imgur.com/3/gallery/search/top/?q=' + query,
 		'method': 'GET',
 		'headers': {
 			'authorization': 'Client-ID 78110c84cc38ed3'
@@ -93,6 +93,8 @@ const queryImgur = function(query, page) {
 
 	$.ajax(settings).done(function (response) {
 		console.log(response);
+		// Getting 16 results, no way to get fewer it looks like
+		// So I'd have to do the pagination myself?
 		renderImgurData(response.data);
 	});
 }
@@ -122,12 +124,21 @@ const renderWikiaCharacterData = function(data) {
 }
 
 const renderImgurData = function(data) {
-	$('.twpic').html('<img src="' + data[0].link + '" alt="' + data[0].title + '">');
+	// 0-index for simplicity
+	window.imgurPage = 0;
+	const index = window.imgurPage*6;
+	// <div class="imgurpic red"><img src="https://i.ytimg.com/vi/8Sh_l-GZy1M/default.jpg" alt="shinobu">1
+	let html = '';
+	for(let i=index;i<index+6; i++) {
+		html += '<div class="imgurpic red"><img src="' + data[i].link + '" alt="' + data[i].title + '"></div>';
+	}
+	$('.imgurpics').html(html);
+	
 }
 
 $(document).ready(function() {
 	const query = encodeURIComponent('shinobu oshino');
 	queryAnilist(query);
 	queryWikia(query);
-	queryImgur(query,0);
+	queryImgur(query);
 });
