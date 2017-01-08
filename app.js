@@ -52,8 +52,7 @@ const renderAnilistCharacterData = function(data) {
 	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
 	// Stretch goal: show excluded text when hovered over (as anilist does)
 	// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-	// Also removes double whitespace that shows up in some descriptions
-	$('.description').html(data.info.replace(/~!.*?!~*/g, '').replace(/^\s+|\s+$/g,'').replace(/\s+/g,' '))
+	$('.description').html(data.info.replace(/~!.*?!~*/g, '').replace(/[<]br[^>]*[>]/gi,'')) // also removes line breaks
 		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
 	
 	$('.appears-in').empty();
@@ -64,5 +63,6 @@ const renderAnilistCharacterData = function(data) {
 }
 
 $(document).ready(function() {
-	queryAnilist("rintarou okabe");
+	const query = "rintarou okabe";
+	queryAnilist(query);
 });
