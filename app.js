@@ -8,7 +8,8 @@
 
 */
 let state = {
-	searchStrings: []
+	searchStrings: [],
+	anilistAccessToken: ''
 }
 
 const YouTube = ( () => {
@@ -83,27 +84,61 @@ const YouTube = ( () => {
 		queryYouTube: (query, token) => {
 			state.searchStrings.push(query);
 			youTubeAPICall(query, token, displayData);
-		}
+		};
 	};
 })();
 
-
-// These chain calls might make Promises appealing, but they really depend on the chain executing in order,
-// so this might be simpler?
-const queryAnilist = (query) => {
+const Anilist = ( () => {
 	const anilistEndPoint = 'https://anilist.co/api/';
-	const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-	const anilistCharSearch = anilistEndPoint + 'character/search/';
-	const anilistCharPage = anilistEndPoint + '';
-	// Send POST to anilist API for client credentials token
-	// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
-	// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
-	// time constraints force me to simply fetch a new one with each search for now
+	let anilistAccessToken = state.anilistAccessToken;
+
+	const getAnilistToken () => {
+		// Could check if previous token is expired first
+		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
+		$.post(anilistAuthTokenPost, data() => { anilistAccessToken = '?access_token=' + data.access_token; )};
+	}
+
+	const anilistCharSearch = (query) => {
+		// Still assuming first result is best; will change this  
+		// ES5: anilistEndPoint + 'character/search/' + query + anilistAccessToken
+		$.get(`${}character/search/${query}${anilistAccessToken}`, (data) => { return data[0].id; } );
+	}
+
+	const anilistCharPage = (id) => {
+		// ES5: anilistEndPoint + 'character/' + id + '/page' + anilistAccessToken
+		$.get(`${anilistEndPoint}character/${id}/page${anilistAccessToken}`, (data) => { return data; } );
+	}
+
+	return {
+		queryAnilist: (query) => {
+			// Send POST to anilist API for client credentials token
+			// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
+			// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
+			// time constraints force me to simply fetch a new one with each search for now
+			getAnilistToken.then( () => {
+				anilistCharSearch(query).then( (id) => { 
+					anilistCharPage(id).then( (data) => {
+						renderAnilistCharacterData(data);
+					});
+				});
+			})
+			.fail( (msg) => { alert(msg); });
+		};
+	}
+})();
+
+const queryAnilist = (query) => {
+	
+	//
+	
+		
+
+/*
 	$.post(anilistAuthTokenPost, (data) => {
-		window.anilistAccessToken = data.access_token;
-		const anilistAccessToken = '?access_token=' + data.access_token;
+		anilistAccessToken = data.access_token;
+		//const anilistAccessToken = '?access_token=' + data.access_token;
 		// GET with token
-		console.log(anilistCharSearch + query + anilistAccessToken);
+		//console.log(anilistCharSearch + query + anilistAccessToken);
 		$.get(anilistCharSearch + query + anilistAccessToken, (data) => {
 			const characterID = data[0].id; // assuming for now first result is the best one
 
@@ -127,7 +162,7 @@ const queryAnilist = (query) => {
 		alert('Error: ' + response.responseText);
 	});
 }
-
+*/
 const queryImgurGallery = (query) => {	
   const settings = {
     'async': true,
@@ -249,7 +284,7 @@ const closeModal = () => {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = 'shinobu oshino';
+	const query = 'emiya shirou';
 	queryAnilist(query);
 	queryImgurGallery(query);
 	YouTube.queryYouTube(query);
