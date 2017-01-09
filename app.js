@@ -18,29 +18,59 @@ const YouTube = ( () => {
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyARINuQ0brfcXy9w1pZ5UGit5GHySfvggc',
+		    type: 'video',
+		    maxResults: '6',
 		    pageToken: token,
 		    q: query
 		} 	
 		$.getJSON(youTubeEndpoint, ytQuery, callback);
 	}
 
-	return {
-		queryYouTube: (query, callback, token) => {
-			youTubeAPICall(query, token, callback);
-		},
-	    displayData: (data) => {
-	    	console.log(data);
-	    	// <div id="yt-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
-	    	// <div class="ytvids col-10"></div>
-	    	// 		<div class="ytvid red"><img src="https://i.ytimg.com/vi/8Sh_l-GZy1M/default.jpg" alt="shinobu"></div>
-	    	let html = '';
-	    	data.items.forEach( (element, index) => {
-	    		const snippet = element.snippet;
-	    		html += `<div class="ytvid red"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
-	    	});
+	const displayData = (data) => {
+    	let html = '';
+    	data.items.forEach( (element, index) => {
+    		if(element.id.videoId) {
+    			const snippet = element.snippet;
+    			html += `<div class="ytvid red"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
+    		}
+    	});
 
-	    	$('.ytvids').html(html);
-	    }
+    	$('.ytvids').html(html);
+    	$('#yt-prev').off('click');
+    	$('#yt-next').off('click');
+
+    	if(data.prevPageToken) {
+			$('#yt-prev').on('click', (event) => {
+	    		event.preventDefault();
+	    		console.log(data.prevPageToken);
+	    		$('#yt-prev').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-prev').off('click');
+    		// Probably want to dim that arrow
+    	}
+
+    	if(data.nextPageToken) {
+			$('#yt-next').on('click', (event) => {
+	    		event.preventDefault();
+	    		console.log(data.nextPageToken);
+	    		$('#yt-next').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-next').off('click');
+    		// Probably want to dim that arrow
+    	}
+	}
+
+	return {
+		queryYouTube: (query, token) => {
+			state.searchStrings.push(query);
+			youTubeAPICall(query, token, displayData);
+		}
 	};
 })();
 
@@ -108,7 +138,8 @@ const queryImgurGallery = function(query) {
       else {
         results.push( {
         	'link': i.link,
-    		'alt': i.title
+    		'alt': i.description | i.title,
+    		'page': `imgur.com/${i.id}`
     	});
       }
     });
@@ -205,8 +236,8 @@ const closeModal = function() {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = encodeURIComponent('kotomine kirei');
+	const query = 'shinobu oshino';
 	queryAnilist(query);
 	queryImgurGallery(query);
-	YouTube.queryYouTube(query, YouTube.displayData);
+	YouTube.queryYouTube(query);
 });
