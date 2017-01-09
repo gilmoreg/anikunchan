@@ -90,7 +90,7 @@ const YouTube = ( () => {
 
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
-const queryAnilist = function(query) {
+const queryAnilist = (query) => {
 	const anilistEndPoint = 'https://anilist.co/api/';
 	const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
 	const anilistCharSearch = anilistEndPoint + 'character/search/';
@@ -99,16 +99,16 @@ const queryAnilist = function(query) {
 	// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 	// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
 	// time constraints force me to simply fetch a new one with each search for now
-	$.post(anilistAuthTokenPost, function(data) {
+	$.post(anilistAuthTokenPost, (data) => {
 		window.anilistAccessToken = data.access_token;
 		const anilistAccessToken = '?access_token=' + data.access_token;
 		// GET with token
 		console.log(anilistCharSearch + query + anilistAccessToken);
-		$.get(anilistCharSearch + query + anilistAccessToken, function(data) {
+		$.get(anilistCharSearch + query + anilistAccessToken, (data) => {
 			const characterID = data[0].id; // assuming for now first result is the best one
 
 			// GET full page data with ID
-			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, function(data) {
+			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, (data) => {
 				renderAnilistCharacterData(data);
 			})
 			.fail(function(response) {
@@ -128,7 +128,7 @@ const queryAnilist = function(query) {
 	});
 }
 
-const queryImgurGallery = function(query) {	
+const queryImgurGallery = (query) => {	
   const settings = {
     'async': true,
     'crossDomain': true,
@@ -139,12 +139,12 @@ const queryImgurGallery = function(query) {
     }
   }
 
-  $.ajax(settings).done(function(response) { 
+  $.ajax(settings).done((response) => { 
   	console.log('imgur',response);
     let results = [];
     let albumPromises = [];
     
-    response.data.forEach(function(i) {
+    response.data.forEach((i) => {
       if(i.is_album) {
         albumPromises.push(queryImgurAlbum(i.id));
       }
@@ -171,7 +171,7 @@ const queryImgurGallery = function(query) {
   });	
 }
 
-const queryImgurAlbum = function(id) {
+const queryImgurAlbum = (id) => {
 	const settings = {
 	    'async': true,
 	    'crossDomain': true,
@@ -184,7 +184,7 @@ const queryImgurAlbum = function(id) {
   	return $.ajax(settings); // returns a Promise object
 }
 
-const getImgurAlbumLinks = function(album) {
+const getImgurAlbumLinks = (album) => {
   let links = [];
   album.forEach((l) => {
     links.push( { 
@@ -195,7 +195,7 @@ const getImgurAlbumLinks = function(album) {
   return links;
 }
 
-const renderAnilistCharacterData = function(data) {
+const renderAnilistCharacterData = (data) => {
 	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
 	$('.char-name').html(data.name_first);
 	if(data.name_last !== 'null') $('.char-name').append(' ' + data.name_last);
@@ -209,13 +209,13 @@ const renderAnilistCharacterData = function(data) {
 		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
 	
 	$('.appears-in').empty();
-	data.anime.forEach(function(anime) {
+	data.anime.forEach((anime) => {
 		$('.appears-in').append('<li><a href="http://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
 	});
 				
 }
 
-const renderImgurData = function(data) {
+const renderImgurData = (data) => {
 	// 0-index for simplicity
 	window.imgurPage = 0;
 	const index = window.imgurPage*6;
@@ -229,19 +229,19 @@ const renderImgurData = function(data) {
 
 const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');
 
-const searchModal = function() {
+const searchModal => {
 	let html = '<div class="search-box red"><input type="text" name="search" placeholder="Type a character name"> <i class="fa fa-search" aria-hidden="true"></i></div>';
 	html+= '<div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div>';
 	openModal(html);
 }
 
-const openModal = function(content) {
+const openModal = (content) => {
 	$('.modal-content').html(content);
 	$('.overlay').addClass('dim');
 	$('#lightbox').removeClass('hidden');
 }
 
-const closeModal = function() {
+const closeModal => {
 	$('.modal-content').empty();
 	$('.overlay').removeClass('dim');
 	$('#lightbox').addClass('hidden');
