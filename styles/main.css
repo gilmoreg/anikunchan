@@ -97,6 +97,12 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   display: inline;
 }
 
+.youtube-video {
+	height: 400px;
+	width: 100%;
+}
+
+
 .red {
   outline: 1px solid red;
 }

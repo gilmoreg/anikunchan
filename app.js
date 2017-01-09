@@ -21,6 +21,8 @@ const YouTube = ( () => {
 		    type: 'video',
 		    maxResults: '6',
 		    pageToken: token,
+		    videoEmbeddable: true,
+		    safeSearch: 'moderate',
 		    q: query
 		} 	
 		$.getJSON(youTubeEndpoint, ytQuery, callback);
@@ -31,11 +33,22 @@ const YouTube = ( () => {
     	data.items.forEach( (element, index) => {
     		if(element.id.videoId) {
     			const snippet = element.snippet;
-    			html += `<div class="ytvid red"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
+    			// QUESTION: is using id like this a good idea? (puts the Youtube video ID in the html to be retreived by javascript, i.e. storing data in the DOM)
+    			html += `<div class="ytvid ytvid-embed red" id="${element.id.videoId}"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
     		}
     	});
 
+    	// HTML
     	$('.ytvids').html(html);
+
+    	// Event handlers
+    	$('.ytvids').on('click','.ytvid', (event) => {
+    		console.log(event);
+    		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" class="youtube-video"></iframe>`;
+    		openModal(html);
+    	});
+    	
+    	// Pagination
     	$('#yt-prev').off('click');
     	$('#yt-next').off('click');
 
