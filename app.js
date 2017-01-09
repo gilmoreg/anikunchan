@@ -9,7 +9,8 @@
 */
 let state = {
 	searchStrings: [],
-	anilistAccessToken: ''
+	anilistAccessToken: '',
+	imgurPage: 0
 }
 
 const YouTube = ( () => {
@@ -150,6 +151,9 @@ const Anilist = ( () => {
 })();
 
 const Imgur = ( () => {
+	
+	const imgurPage = state.imgurPage;
+	let imgurData = [];
 
 	const queryImgurGallery = (query) => {	
 	  const settings = {
@@ -163,7 +167,7 @@ const Imgur = ( () => {
 	  }
 	  $.ajax(settings).done((response) => { 
 
-		let results = [];
+		imgurData = [];
 		let albumPromises = [];
 
 		response.data.forEach((i) => {
@@ -171,7 +175,7 @@ const Imgur = ( () => {
 		    albumPromises.push(queryImgurAlbum(i.id));
 		  }
 		  else {
-		    results.push( {
+		    imgurData.push( {
 		    	'link': i.link,
 				'alt': i.description | i.title,
 				'page': `imgur.com/${i.id}`
@@ -182,13 +186,13 @@ const Imgur = ( () => {
 		if(albumPromises.length>0) {
 		  Promise.all(albumPromises).then( aLinks => {
 		    aLinks.forEach( a => {
-		      results.push.apply(results, getImgurAlbumLinks(a.data));
+		      imgurData.push.apply(imgurData, getImgurAlbumLinks(a.data));
 		    });
-		    renderImgurData(results);
+		    renderImgurData();
 		  }).catch( error => { alert(error); });
 		}
 		else {
-		  renderImgurData(results);
+		  renderImgurData();
 		}
 		});
 	}
@@ -211,22 +215,65 @@ const Imgur = ( () => {
 	  album.forEach((l) => {
 	    links.push( { 
 	    	'link': l.link,
-	    	'alt': l.title
+	    	'alt': l.title,
+	    	'page': `imgur.com/${album.id}`
 	    });
 	  });
 	  return links;
 	}
 
-	const renderImgurData = (data) => {
-		// 0-index for simplicity
-		window.imgurPage = 0;
-		const index = window.imgurPage*6;
+	const renderImgurData = () => {
+		const index = imgurPage*6;
 		let html = '';
 		for(let i=index;i<index+6; i++) {
-			if(i>=data.length) break;
-			html += '<div class="imgurpic red"><img src="' + imgurURL(data[i].link,'b') + '" alt="' + data[i].title + '"></div>';
+			if(i>=imgurData.length) break;
+			//html += '<div class="imgurpic red"><img src="' + imgurURL(data[i].link,'b') + '" alt="' + data[i].title + '"></div>';
+			// imgurData is [ {link, alt, page } ] 
+			html += `<div class="imgurpic red"><img src="${imgurURL(imgurData[i].link,'b')}" id="imgur-${i}" alt="${imgurData[i].title}"></div>'`;
 		}
+
+		// HTML
 		$('.imgurpics').html(html);
+
+		// Event handlers
+		$('.imgurpics').on('click','.imgurpic', (event) => {
+    		event.preventDefault();
+    		console.log(event);
+    		let index = $(event.target).attr('id').match(/[^-]*$/);
+    		console.log(index);
+    		let html = `<a href="https://${imgurData[index].page}" target="_blank"><img src="${imgurData[index].link}" class="imgur-pic"></a>`;
+    		openModal(html);
+    	});
+
+    	// Pagination
+    	/*$('#yt-prev').off('click');
+    	$('#yt-next').off('click');
+
+    	if(data.prevPageToken) {
+			$('#yt-prev').on('click', (event) => {
+	    		event.preventDefault();
+	    		console.log(data.prevPageToken);
+	    		$('#yt-prev').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-prev').off('click');
+    		// Probably want to dim that arrow
+    	}
+
+    	if(data.nextPageToken) {
+			$('#yt-next').on('click', (event) => {
+	    		event.preventDefault();
+	    		console.log(data.nextPageToken);
+	    		$('#yt-next').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-next').off('click');
+    		// Probably want to dim that arrow
+    	}*/
 	}
 
 	const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');

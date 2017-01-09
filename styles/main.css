@@ -97,7 +97,7 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   display: inline;
 }
 
-.youtube-video {
+.youtube-video, .imgur-pic {
 	height: 400px;
 	width: 100%;
 }
