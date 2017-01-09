@@ -1,27 +1,36 @@
 /* Modal Content */
 #lightbox {
+  position: fixed;
+  top: 200px;
+  left: 200px;
   z-index: -1;
+  background-color: white;
+  width: 400px;
+  height: 400px;
 }
 
 .modal-content {
-  position: relative;
-  background-color: white;
+/*  background-color: white;
   margin: auto;
   padding: 0;
   max-width: 100px;
-  color: blue;
+  color: blue;*/
+  width: 100%;
+  text-align: center;
+}
+
+.search-box {
+  padding-top: 20px;
 }
 
 /* The Close Button */
 .close {
-  color: white;
+  color: black;
   position: absolute;
-  top: 10px;
-  right: 25px;
+  top: 0px;
+  right: -20px;
   font-size: 35px;
   font-weight: bold;
-  width: 500px;
-  height: 500px;
 }
 
 .close:hover,

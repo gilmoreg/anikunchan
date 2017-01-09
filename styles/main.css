@@ -108,3 +108,7 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 .black {
   outline: 1px solid black;
 }
+
+.blue {
+	outline: 1px solid blue;	
+}

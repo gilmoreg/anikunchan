@@ -196,7 +196,8 @@ const renderImgurData = function(data) {
 }
 
 const searchModal = function() {
-	let html = '<h1>hello world!</h1>';
+	let html = '<div class="search-box red"><input type="text" name="search" placeholder="Type a character name"> <i class="fa fa-search" aria-hidden="true"></i></div>';
+	html+= '<h2>Look at the results!</h2>';
 	openModal(html);
 }
 
