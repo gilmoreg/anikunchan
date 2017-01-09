@@ -149,86 +149,95 @@ const Anilist = ( () => {
 	}
 })();
 
-const queryImgurGallery = (query) => {	
-  const settings = {
-    'async': true,
-    'crossDomain': true,
-    'url': 'https://api.imgur.com/3/gallery/search/top/?q=' + query,
-    'method': 'GET',
-    'headers': {
-      'authorization': 'Client-ID 78110c84cc38ed3'
-    }
-  }
+const Imgur = ( () => {
 
-  $.ajax(settings).done((response) => { 
-  	console.log('imgur',response);
-    let results = [];
-    let albumPromises = [];
-    
-    response.data.forEach((i) => {
-      if(i.is_album) {
-        albumPromises.push(queryImgurAlbum(i.id));
-      }
-      else {
-        results.push( {
-        	'link': i.link,
-    		'alt': i.description | i.title,
-    		'page': `imgur.com/${i.id}`
-    	});
-      }
-    });
-    
-    if(albumPromises.length>0) {
-      Promise.all(albumPromises).then( aLinks => {
-        aLinks.forEach( a => {
-          results.push.apply(results, getImgurAlbumLinks(a.data));
-        });
-        renderImgurData(results);
-      }).catch( error => { alert(error); });
-    }
-    else {
-      renderImgurData(results);
-    }
-  });	
-}
-
-const queryImgurAlbum = (id) => {
-	const settings = {
+	const queryImgurGallery = (query) => {	
+	  const settings = {
 	    'async': true,
 	    'crossDomain': true,
-	    'url': 'https://api.imgur.com/3/album/' + id + '/images',
+	    'url': 'https://api.imgur.com/3/gallery/search/top/?q=' + query,
 	    'method': 'GET',
 	    'headers': {
 	      'authorization': 'Client-ID 78110c84cc38ed3'
 	    }
-  	}
-  	return $.ajax(settings); // returns a Promise object
-}
+	  }
+	  $.ajax(settings).done((response) => { 
 
-const getImgurAlbumLinks = (album) => {
-  let links = [];
-  album.forEach((l) => {
-    links.push( { 
-    	'link': l.link,
-    	'alt': l.title
-    });
-  });
-  return links;
-}
+		let results = [];
+		let albumPromises = [];
 
-const renderImgurData = (data) => {
-	// 0-index for simplicity
-	window.imgurPage = 0;
-	const index = window.imgurPage*6;
-	let html = '';
-	for(let i=index;i<index+6; i++) {
-		if(i>=data.length) break;
-		html += '<div class="imgurpic red"><img src="' + imgurURL(data[i].link,'b') + '" alt="' + data[i].title + '"></div>';
+		response.data.forEach((i) => {
+		  if(i.is_album) {
+		    albumPromises.push(queryImgurAlbum(i.id));
+		  }
+		  else {
+		    results.push( {
+		    	'link': i.link,
+				'alt': i.description | i.title,
+				'page': `imgur.com/${i.id}`
+			});
+		  }
+		});
+
+		if(albumPromises.length>0) {
+		  Promise.all(albumPromises).then( aLinks => {
+		    aLinks.forEach( a => {
+		      results.push.apply(results, getImgurAlbumLinks(a.data));
+		    });
+		    renderImgurData(results);
+		  }).catch( error => { alert(error); });
+		}
+		else {
+		  renderImgurData(results);
+		}
+		});
 	}
-	$('.imgurpics').html(html);
-}
 
-const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');
+	const queryImgurAlbum = (id) => {
+		const settings = {
+		    'async': true,
+		    'crossDomain': true,
+		    'url': 'https://api.imgur.com/3/album/' + id + '/images',
+		    'method': 'GET',
+		    'headers': {
+		      'authorization': 'Client-ID 78110c84cc38ed3'
+		    }
+	  	}
+	  	return $.ajax(settings); // returns a Promise object
+	}
+
+	const getImgurAlbumLinks = (album) => {
+	  let links = [];
+	  album.forEach((l) => {
+	    links.push( { 
+	    	'link': l.link,
+	    	'alt': l.title
+	    });
+	  });
+	  return links;
+	}
+
+	const renderImgurData = (data) => {
+		// 0-index for simplicity
+		window.imgurPage = 0;
+		const index = window.imgurPage*6;
+		let html = '';
+		for(let i=index;i<index+6; i++) {
+			if(i>=data.length) break;
+			html += '<div class="imgurpic red"><img src="' + imgurURL(data[i].link,'b') + '" alt="' + data[i].title + '"></div>';
+		}
+		$('.imgurpics').html(html);
+	}
+
+	const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');
+
+	return {
+		queryImgur: (query) => {
+			queryImgurGallery(query);
+		}
+	}
+
+})();
 
 const searchModal = () => {
 	let html = '<div class="search-box red"><input type="text" name="search" placeholder="Type a character name"> <i class="fa fa-search" aria-hidden="true"></i></div>';
@@ -252,6 +261,6 @@ $(document).ready(function() {
 	//searchModal();
 	const query = 'emiya shirou';
 	Anilist.queryAnilist(query);
-	queryImgurGallery(query);
+	Imgur.queryImgur(query);
 	YouTube.queryYouTube(query);
 });
