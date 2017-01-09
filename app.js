@@ -98,27 +98,40 @@ const Anilist = ( () => {
 		// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
 		// time constraints force me to simply fetch a new one with each search for now
 		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-		//return $.post(anilistAuthTokenPost, (data) => { anilistAccessToken = '?access_token=' + data.access_token; });
 		return new Promise( (resolve,reject) => {
 			resolve($.post(anilistAuthTokenPost)); 
 		});
 	}
 
 	const anilistCharSearch = (query) => {
-		// Still assuming first result is best; will change this  
-		// ES5: anilistEndPoint + 'character/search/' + query + anilistAccessToken
-		// , (data) => { return data[0].id; }
 		return new Promise( (resolve,reject) => {
 			resolve( $.get(`${anilistEndPoint}character/search/${query}${anilistAccessToken}`) );
 		});
 	}
 
 	const anilistCharPage = (id) => {
-		// ES5: anilistEndPoint + 'character/' + id + '/page' + anilistAccessToken
-		// , (data) => { return data; }
 		return new Promise( (resolve,reject) => {
 			resolve( $.get(`${anilistEndPoint}character/${id}/page${anilistAccessToken}`) );
 		});
+	}
+
+	const renderAnilistCharacterData = (data) => {
+		$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
+		$('.char-name').html(data.name_first);
+		if(data.name_last !== 'null') $('.char-name').append(' ' + data.name_last);
+		$('.jpn-char-name').html(data.name_japanese);
+		$('.alt-char-name').html(data.name_alt);
+		// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
+		// Stretch goal: show excluded text when hovered over (as anilist does)
+		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
+		$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
+			.replace(/[<]br[^>]*[>]/gi,'')) // remove line breaks
+			.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
+		
+		$('.appears-in').empty();
+		data.anime.forEach((anime) => {
+			$('.appears-in').append('<li><a href="http://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+		});			
 	}
 
 	return {
@@ -136,42 +149,6 @@ const Anilist = ( () => {
 	}
 })();
 
-//const queryAnilist = (query) => {
-	
-	//
-	
-		
-
-/*
-	$.post(anilistAuthTokenPost, (data) => {
-		anilistAccessToken = data.access_token;
-		//const anilistAccessToken = '?access_token=' + data.access_token;
-		// GET with token
-		//console.log(anilistCharSearch + query + anilistAccessToken);
-		$.get(anilistCharSearch + query + anilistAccessToken, (data) => {
-			const characterID = data[0].id; // assuming for now first result is the best one
-
-			// GET full page data with ID
-			$.get(anilistEndPoint + 'character/' + characterID + '/page' + anilistAccessToken, (data) => {
-				renderAnilistCharacterData(data);
-			})
-			.fail(function(response) {
-				// TODO: something more sophisticated for error handling
-				alert('Error: ' + response.responseText);
-			});
-
-		})
-		.fail(function(response) {
-			// TODO: something more sophisticated for error handling
-			alert('Error: ' + response.responseText);
-		});
-	})
-	.fail(function(response) {
-		// TODO: something more sophisticated for error handling
-		alert('Error: ' + response.responseText);
-	});
-}
-*/
 const queryImgurGallery = (query) => {	
   const settings = {
     'async': true,
@@ -237,26 +214,6 @@ const getImgurAlbumLinks = (album) => {
     });
   });
   return links;
-}
-
-const renderAnilistCharacterData = (data) => {
-	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
-	$('.char-name').html(data.name_first);
-	if(data.name_last !== 'null') $('.char-name').append(' ' + data.name_last);
-	$('.jpn-char-name').html(data.name_japanese);
-	$('.alt-char-name').html(data.name_alt);
-	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
-	// Stretch goal: show excluded text when hovered over (as anilist does)
-	// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-	$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
-		.replace(/[<]br[^>]*[>]/gi,'')) // remove line breaks
-		.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
-	
-	$('.appears-in').empty();
-	data.anime.forEach((anime) => {
-		$('.appears-in').append('<li><a href="http://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
-	});
-				
 }
 
 const renderImgurData = (data) => {
