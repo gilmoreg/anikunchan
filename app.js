@@ -1,13 +1,21 @@
+/*
+	Working notes:
+
+	Anilist character search is pretty finicky and doesn't return some expected results, but there really isn't a better source
+
+	Certain searches, especially for characters with no last names, don't make for good Imgur or Youtube searches
+
+*/
+
+
 'use strict';
-
-/* 	Is there a way to make this string using an object, like using $.param? Quick google search didn't turn up anything
- 	Also the only way I know of not putting my client secret in a public repo is by doing it server side, which
- 	is impossible here; can anything be done?
-*/  
-
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
 const queryAnilist = function(query) {
+	/* 	Is there a way to make this string using an object, like using $.param? Quick google search didn't turn up anything
+ 	Also the only way I know of not putting my client secret in a public repo is by doing it server side, which
+ 	is impossible here; can anything be done?
+*/  
 	const anilistEndPoint = 'https://anilist.co/api/';
 	const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
 	const anilistCharSearch = anilistEndPoint + 'character/search/';
@@ -48,7 +56,7 @@ const queryAnilist = function(query) {
 	I am beginning to think this is more trouble than it's worth - all I get from wikia is a snippet summary, much of the info is repeated
 	from the anilist API, and it introduces many more points of failure (there are likely many anilist pages which do not have a wikia page)
 	Using YQL seems...distasteful
-	But if the point is simply to show off some flexibility as a developer, I am willing to keep it
+	But if the point is simply to show off some flexibility as a developer...
 
 const queryWikia = function(query) {
 	const wikiaEndPoint = 'https://www.wikia.com/api/v1/Search';
@@ -150,7 +158,8 @@ const getImgurAlbumLinks = function(album) {
 
 const renderAnilistCharacterData = function(data) {
 	$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
-	$('.char-name').html(data.name_first + ' ' + data.name_last);
+	$('.char-name').html(data.name_first);
+	if(data.name_last !== 'null') $('.char-name').append(' ' + data.name_last);
 	$('.jpn-char-name').html(data.name_japanese);
 	$('.alt-char-name').html(data.name_alt);
 	// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
@@ -184,12 +193,28 @@ const renderImgurData = function(data) {
 		html += '<div class="imgurpic red"><img src="' + data[i].link + '" alt="' + data[i].title + '"></div>';
 	}
 	$('.imgurpics').html(html);
-	
+}
+
+const searchModal = function() {
+	let html = '<h1>hello world!</h1>';
+	openModal(html);
+}
+
+const openModal = function(content) {
+	$('.modal-content').html(content);
+	$('.overlay').addClass('dim');
+	$('#lightbox').removeClass('hidden');
+}
+
+const closeModal = function() {
+	$('.modal-content').empty();
+	$('.overlay').removeClass('dim');
+	$('#lightbox').addClass('hidden');
 }
 
 $(document).ready(function() {
-	const query = encodeURIComponent('emilia');
+	searchModal();
+	/*const query = encodeURIComponent('kotomine kirei');
 	queryAnilist(query);
-	//queryWikia(encodeURIComponent('emilia re:zero'));
-	queryImgurGallery(encodeURIComponent('emilia re zero'));
+	queryImgurGallery(query);*/
 });

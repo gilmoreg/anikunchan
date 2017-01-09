@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
   <link rel="stylesheet" href="styles/inline-block-grid.css">
   <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/modal.css">
 </head>
 <nav>
   <div class="row header">
@@ -20,9 +21,12 @@
     <div class="col-1"></div>
   </div>
 </nav>
-
 <body>
   <div class="overlay"></div>
+  <div id="lightbox" class="modal hidden col-6">
+    <span class="close cursor" onclick="closeModal()">&times;</span>
+    <div class="modal-content"></div>
+  </div>
   <div class="row">
     <div class="col-1 infoblock"></div>
     <!-- Left Column -->
@@ -98,7 +102,6 @@
   <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
   <script src="app.js"></script>
 </body>
-
 </html>
 
 <!-- 
