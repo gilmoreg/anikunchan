@@ -1,12 +1,20 @@
 /* Modal Content */
 #lightbox {
   position: fixed;
-  top: 200px;
-  left: 200px;
-  z-index: -1;
+  top: 25%;
+  left: 10%;
+  z-index: 0;
   background-color: white;
-  width: 400px;
-  height: 400px;
+  /* Mobile default */
+  width: 80%;
+  height: 50%;
+}
+
+@media only screen and (min-width: 768px) {
+  #lightbox { 
+    width: 60%;
+    left: 20%;
+  }
 }
 
 .modal-content {
@@ -25,10 +33,10 @@
 
 /* The Close Button */
 .close {
-  color: black;
+  color: white;
   position: absolute;
-  top: 0px;
-  right: -20px;
+  top: -25px;
+  right: -25px;
   font-size: 35px;
   font-weight: bold;
 }
