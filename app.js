@@ -229,7 +229,7 @@ const renderImgurData = (data) => {
 
 const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');
 
-const searchModal => {
+const searchModal = () => {
 	let html = '<div class="search-box red"><input type="text" name="search" placeholder="Type a character name"> <i class="fa fa-search" aria-hidden="true"></i></div>';
 	html+= '<div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div>';
 	openModal(html);
@@ -241,7 +241,7 @@ const openModal = (content) => {
 	$('#lightbox').removeClass('hidden');
 }
 
-const closeModal => {
+const closeModal = () => {
 	$('.modal-content').empty();
 	$('.overlay').removeClass('dim');
 	$('#lightbox').addClass('hidden');
