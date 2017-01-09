@@ -1,3 +1,4 @@
+'use strict';
 /*
 	Working notes:
 
@@ -6,9 +7,34 @@
 	Certain searches, especially for characters with no last names, don't make for good Imgur or Youtube searches
 
 */
+let state = {
+	searchStrings: []
+}
+
+const YouTube = ( () => {
+	const youTubeEndpoint = 'https://www.googleapis.com/youtube/v3/search';
+	
+	const youTubeAPICall = (query, token, callback) => {	
+		const  ytQuery = {
+	    	part: 'snippet',
+		    key: 'AIzaSyARINuQ0brfcXy9w1pZ5UGit5GHySfvggc',
+		    pageToken: token,
+		    q: query
+		} 	
+		$.getJSON(youTubeEndpoint, ytQuery, callback);
+	}
+
+	return {
+		queryYouTube: (query, callback, token) => {
+			youTubeAPICall(query, token, callback);
+		},
+    displayData: (data) => {
+    	console.log(data);
+    }
+	};
+})();
 
 
-'use strict';
 // These chain calls might make Promises appealing, but they really depend on the chain executing in order,
 // so this might be simpler?
 const queryAnilist = function(query) {
@@ -172,4 +198,5 @@ $(document).ready(function() {
 	const query = encodeURIComponent('kotomine kirei');
 	queryAnilist(query);
 	queryImgurGallery(query);
+	YouTube.queryYouTube(query, YouTube.displayData);
 });
