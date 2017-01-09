@@ -28,9 +28,19 @@ const YouTube = ( () => {
 		queryYouTube: (query, callback, token) => {
 			youTubeAPICall(query, token, callback);
 		},
-    displayData: (data) => {
-    	console.log(data);
-    }
+	    displayData: (data) => {
+	    	console.log(data);
+	    	// <div id="yt-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
+	    	// <div class="ytvids col-10"></div>
+	    	// 		<div class="ytvid red"><img src="https://i.ytimg.com/vi/8Sh_l-GZy1M/default.jpg" alt="shinobu"></div>
+	    	let html = '';
+	    	data.items.forEach( (element, index) => {
+	    		const snippet = element.snippet;
+	    		html += `<div class="ytvid red"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
+	    	});
+
+	    	$('.ytvids').html(html);
+	    }
 	};
 })();
 
@@ -194,7 +204,7 @@ const closeModal = function() {
 }
 
 $(document).ready(function() {
-	searchModal();
+	//searchModal();
 	const query = encodeURIComponent('kotomine kirei');
 	queryAnilist(query);
 	queryImgurGallery(query);
