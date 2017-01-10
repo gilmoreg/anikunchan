@@ -245,19 +245,21 @@ const openModal = (content) => {
 	$('.modal-content').html(content);
 	$('.overlay').addClass('dim');
 	$('#lightbox').removeClass('hidden');
+	$('.overlay').on('click', (event) => {
+		closeModal();
+	});
 }
 
 const closeModal = () => {
 	$('.modal-content').empty();
 	$('.overlay').removeClass('dim');
 	$('#lightbox').addClass('hidden');
+	$('.overlay').off('click');
 }
 
 const setLinks = (query) => {
 	let q = encodeURIComponent(query);
 	let html = '';
-	// https://www.google.com/#q=%22Tsumugi+Kotobuki%22
-	// http://www.google.com/search?hl=en&q=%s&aq=f&oq= 
 	html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
 	html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
 	html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
@@ -267,10 +269,10 @@ const setLinks = (query) => {
 }
 
 $(document).ready(function() {
-	//searchModal();
-	const query = 'Erika Karisawa';
+	searchModal();
+	/*const query = 'Erika Karisawa';
 	Anilist.queryAnilist(query);
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
-	setLinks(query);
+	setLinks(query);*/
 });
