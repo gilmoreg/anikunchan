@@ -9,9 +9,84 @@
 */
 let state = {
 	searchStrings: [],
-	anilistAccessToken: '',
+	anilistAccessToken: {},
 	imgurPage: 0
 }
+
+const Google = ( () => {
+	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
+
+	const googleAPICall = (query, token, callback) => {
+		const gQuery = {
+			q: query,
+			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+			cx: '017818390200612997677:nulntbij5kc',
+			searchType: 'image',
+			num: 6
+		}
+		$.getJSON(googleEndpoint, gQuery, callback);
+	}
+
+	const displayGoogleData = (data) => {
+		console.log('google',data);
+		if(data.length===0) {
+			$('.google-image-container').addClass('hidden');
+			return;
+		}
+		$('.google-image-container').removeClass('hidden');
+		
+		let html = '';
+    	data.items.forEach( (element, index) => {
+    		if(element.image) {
+    			html += `<div class="gimage red" link="${element.link}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
+    		}
+    	});
+
+    	// HTML
+    	$('.googleimages').html(html);
+
+    	// Event handlers
+    	$('.googleimages').on('click','.gimage', (event) => {
+    		const link = $(event.target).closest('.gimage').attr('link');
+    		let html = `<a href="${link}" target="_blank"><img src="${link}" class="google-image"></a>`;
+    		openModal(html);
+    	});
+    	
+    	// Pagination
+    	$('#yt-prev, #yt-next').off('click').removeClass('dim-arrow');
+
+    	if(data.prevPageToken) {
+			$('#yt-prev').on('click', (event) => {
+	    		event.preventDefault();
+	    		$('#yt-prev').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-prev').off('click');
+    		$('#yt-prev').addClass('dim-arrow');
+    	}
+
+    	if(data.nextPageToken) {
+			$('#yt-next').on('click', (event) => {
+	    		event.preventDefault();
+	    		$('#yt-next').off('click');
+	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
+	    	});
+    	}
+    	else {
+    		$('#yt-next').off('click');
+    		$('#yt-next').addClass('dim-arrow');
+    	}
+
+	}
+
+	return {
+		queryGoogleImages: (query,token) => {
+			googleAPICall(query,token,displayGoogleData);
+		}
+	}
+})();
 
 const YouTube = ( () => {
 	const youTubeEndpoint = 'https://www.googleapis.com/youtube/v3/search';
@@ -19,7 +94,7 @@ const YouTube = ( () => {
 	const youTubeAPICall = (query, token, callback) => {	
 		const  ytQuery = {
 	    	part: 'snippet',
-		    key: 'AIzaSyARINuQ0brfcXy9w1pZ5UGit5GHySfvggc',
+		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 		    type: 'video',
 		    maxResults: '6',
 		    pageToken: token,
@@ -51,7 +126,6 @@ const YouTube = ( () => {
 
     	// Event handlers
     	$('.ytvids').on('click','.ytvid', (event) => {
-    		console.log(event);
     		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" class="youtube-video"></iframe>`;
     		openModal(html);
     	});
@@ -62,7 +136,6 @@ const YouTube = ( () => {
     	if(data.prevPageToken) {
 			$('#yt-prev').on('click', (event) => {
 	    		event.preventDefault();
-	    		console.log(data.prevPageToken);
 	    		$('#yt-prev').off('click');
 	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
 	    	});
@@ -75,7 +148,6 @@ const YouTube = ( () => {
     	if(data.nextPageToken) {
 			$('#yt-next').on('click', (event) => {
 	    		event.preventDefault();
-	    		console.log(data.nextPageToken);
 	    		$('#yt-next').off('click');
 	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
 	    	});
@@ -99,6 +171,7 @@ const Anilist = ( () => {
 	let anilistAccessToken = state.anilistAccessToken;
 
 	const getAnilistToken = () => {
+		if(Date.now() < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 		// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
@@ -111,13 +184,13 @@ const Anilist = ( () => {
 
 	const anilistCharSearch = (query) => {
 		return new Promise( (resolve,reject) => {
-			resolve( $.get(`${anilistEndPoint}character/search/${query}${anilistAccessToken}`) );
+			resolve( $.get(`${anilistEndPoint}character/search/${query}?access_token=${anilistAccessToken.access_token}`) );
 		});
 	}
 
 	const anilistCharPage = (id) => {
 		return new Promise( (resolve,reject) => {
-			resolve( $.get(`${anilistEndPoint}character/${id}/page${anilistAccessToken}`) );
+			resolve( $.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`) );
 		});
 	}
 
@@ -132,9 +205,9 @@ const Anilist = ( () => {
 		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
 		$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
 			.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
-			.replace(new RegExp('_', 'g'),'')) // remove underscore markdown - stretch goal would be to use it to bold text __text__
+			.replace(new RegExp('_', 'g'),'')) // remove underscore markdown - stretch goal would be to use it to italicize text __text__
 			.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
-		
+
 		$('.appears-in').empty();
 		data.anime.forEach((anime) => {
 			$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
@@ -144,14 +217,14 @@ const Anilist = ( () => {
 	return {
 		queryAnilist: (query) => {
 			getAnilistToken().then( (data) => {
-				anilistAccessToken = '?access_token=' + data.access_token;
+				anilistAccessToken = data; //'?access_token=' + data.access_token;
 				anilistCharSearch(query).then( (data) => { 
 					anilistCharPage(data[0].id).then( (data) => {
 						renderAnilistCharacterData(data);
 					});
 				});
 			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); });
+			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
 		}
 	}
 })();
@@ -250,9 +323,7 @@ const Imgur = ( () => {
 		// Event handlers
 		$('.imgurpics').on('click','.imgurpic', (event) => {
     		event.preventDefault();
-    		console.log(event);
     		let index = $(event.target).attr('id').match(/[^-]*$/);
-    		console.log(index);
     		let html = `<a href="https://${imgurData[index].page}" target="_blank"><img src="${imgurData[index].link}" class="imgur-pic"></a>`;
     		openModal(html);
     	});
@@ -315,8 +386,9 @@ const closeModal = () => {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = 'Ackerman, Mikasa';
+	const query = 'Tsumugi Kotobuki';
 	Anilist.queryAnilist(query);
 	Imgur.queryImgur(query);
 	YouTube.queryYouTube(query);
+	Google.queryGoogleImages(query);
 });
