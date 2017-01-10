@@ -32,7 +32,6 @@ const Google = ( () => {
 	}
 
 	const displayGoogleData = (data) => {
-		console.log('google',googlePage, data);
 		const numResults = data.queries.request[0].totalResults;
 
 		if(data.length===0) {
@@ -209,7 +208,6 @@ const Anilist = ( () => {
 		$('.jpn-char-name').html(data.name_japanese);
 		$('.alt-char-name').html(data.name_alt);
 		// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
-		// Stretch goal: show excluded text when hovered over (as anilist does)
 		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
 		let description = marked(data.info.replace(/~!.*?!~*/g, ''));
 		//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
@@ -270,7 +268,7 @@ const setLinks = (query) => {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = 'Tsumugi Kotobuki';
+	const query = 'Erika Karisawa';
 	Anilist.queryAnilist(query);
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
