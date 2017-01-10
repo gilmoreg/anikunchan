@@ -62,19 +62,22 @@ nav input {
 
 /* I want the container that holds these images to be responsive, but not the inner contents, so I am doing this manually rather than using col-x classes 
 TODO: make a separate class like f-col-3 for this (making sure the [class*="col-"] doesn't select it) */
-.twpic, .ytvid {
+.imgurpic, .ytvid {
   text-align: center;
   padding-top: 0px;
   padding-bottom: 20px;
   display: inline-block;
   margin-right: -0.2em; /* clearfix */
-  width: 33.33%; 
+  width: 33.33%;
+  height: 200px; 
 }
 
-/* Can I combine these two into a single selector? .twpic,.ytvid img {} doesn't work */
-.twpic img {
+/* Can I combine these two into a single selector? .imgurpic,.ytvid img {} doesn't work */
+.imgurpic img {
   padding-top: 10%;
-  width: 80%;
+  width: 90%;
+  height: 100%;
+  object-fit: scale-down;
 }
 
 .ytvid img {
@@ -94,6 +97,12 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   display: inline;
 }
 
+.youtube-video, .imgur-pic {
+	height: 400px;
+	width: 100%;
+}
+
+
 .red {
   outline: 1px solid red;
 }
@@ -104,4 +113,8 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 
 .black {
   outline: 1px solid black;
+}
+
+.blue {
+	outline: 1px solid blue;	
 }

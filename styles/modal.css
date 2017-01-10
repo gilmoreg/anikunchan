@@ -1,0 +1,63 @@
+/* Modal Content */
+#lightbox {
+  position: fixed;
+  top: 25%;
+  left: 10%;
+  z-index: 0;
+  background-color: white;
+  /* Mobile default */
+  width: 80%;
+  height: 50%;
+}
+
+@media only screen and (min-width: 768px) {
+  #lightbox { 
+    width: 60%;
+    left: 20%;
+  }
+}
+
+.modal-content {
+  width: 100%;
+  text-align: center;
+}
+
+.search-box {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+/* The Close Button */
+.close {
+  color: white;
+  position: absolute;
+  top: -25px;
+  right: -25px;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #999;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.hidden {
+	display: none;
+}
+
+.dim {
+	display: block;
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	z-index: 0;                /* Setting it lower had the onlines popping in front, higher had the modal dimmed, didn't seem to matter what I set the modal to */
+	-moz-opacity: 0.9;
+	opacity:.9;
+	filter: alpha(opacity=90);
+}
