@@ -211,11 +211,11 @@ const Anilist = ( () => {
 		// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
 		// Stretch goal: show excluded text when hovered over (as anilist does)
 		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-		$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
-			.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
-			.replace(new RegExp('_', 'g'),'')) // remove underscore markdown - stretch goal would be to use it to italicize text __text__
-			.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
+		let description = marked(data.info.replace(/~!.*?!~*/g, ''));
+		//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
+		description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
 
+		$('.long-description').html(description);
 		$('.appears-in').empty();
 		data.anime.forEach((anime) => {
 			$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
@@ -255,10 +255,24 @@ const closeModal = () => {
 	$('#lightbox').addClass('hidden');
 }
 
+const setLinks = (query) => {
+	let q = encodeURIComponent(query);
+	let html = '';
+	// https://www.google.com/#q=%22Tsumugi+Kotobuki%22
+	// http://www.google.com/search?hl=en&q=%s&aq=f&oq= 
+	html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
+	html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
+	html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
+	html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
+	html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
+	$('.links-list').html(html);
+}
+
 $(document).ready(function() {
 	//searchModal();
 	const query = 'Tsumugi Kotobuki';
 	Anilist.queryAnilist(query);
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
+	setLinks(query);
 });
