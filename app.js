@@ -152,7 +152,7 @@ const Anilist = ( () => {
 
 const Imgur = ( () => {
 	
-	const imgurPage = state.imgurPage;
+	let imgurPage = state.imgurPage;
 	let imgurData = [];
 
 	const queryImgurGallery = (query) => {	
@@ -246,34 +246,32 @@ const Imgur = ( () => {
     	});
 
     	// Pagination
-    	/*$('#yt-prev').off('click');
-    	$('#yt-next').off('click');
+    	$('#imgur-prev').off('click');
+    	$('#imgur-next').off('click');
 
-    	if(data.prevPageToken) {
-			$('#yt-prev').on('click', (event) => {
+    	if(imgurPage>0) {
+    		$('#imgur-prev').on('click', (event) => {
 	    		event.preventDefault();
-	    		console.log(data.prevPageToken);
-	    		$('#yt-prev').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
+	    		$('#imgur-prev').off('click');
+	    		imgurPage--;
+	    		renderImgurData();
 	    	});
     	}
     	else {
-    		$('#yt-prev').off('click');
-    		// Probably want to dim that arrow
+    		// dim that arrow
     	}
 
-    	if(data.nextPageToken) {
-			$('#yt-next').on('click', (event) => {
+    	if( (imgurPage*6) < imgurData.length ) {
+    		$('#imgur-next').on('click', (event) => {
 	    		event.preventDefault();
-	    		console.log(data.nextPageToken);
-	    		$('#yt-next').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
+	    		$('#imgur-next').off('click');
+	    		imgurPage++;
+	    		renderImgurData();
 	    	});
     	}
     	else {
-    		$('#yt-next').off('click');
-    		// Probably want to dim that arrow
-    	}*/
+    		// dim that arrow
+    	}
 	}
 
 	const imgurURL = (imgURL, size) => imgURL.replace(/\.(?=[^.]*$)/, (size || '') + '.');
@@ -306,7 +304,7 @@ const closeModal = () => {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = 'emiya shirou';
+	const query = 'shinobu oshino';
 	Anilist.queryAnilist(query);
 	Imgur.queryImgur(query);
 	YouTube.queryYouTube(query);
