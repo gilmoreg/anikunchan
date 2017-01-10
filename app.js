@@ -99,6 +99,7 @@ const YouTube = ( () => {
 	const youTubeEndpoint = 'https://www.googleapis.com/youtube/v3/search';
 	
 	const youTubeAPICall = (query, token, callback) => {	
+		console.log('youtube query',query);
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
@@ -113,6 +114,7 @@ const YouTube = ( () => {
 	}
 
 	const displayData = (data) => {
+		console.log('youtube',data);
 		if(data.length===0) {
 			$('.youtube-videos').addClass('hidden');
 			return;
@@ -178,7 +180,7 @@ const Anilist = ( () => {
 	let anilistAccessToken = state.anilistAccessToken;
 
 	const getAnilistToken = () => {
-		if(Date.now() < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
+		//if(Date.now() < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 		// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
@@ -201,27 +203,14 @@ const Anilist = ( () => {
 		});
 	}
 
-	const renderAnilistCharacterData = (data) => {
-		$('.portrait-image').html('<img src="' + data.image_url_lge + '">');
-		$('.char-name').html(data.name_first);
-		if(data.name_last !== 'null') $('.char-name').append(' ' + data.name_last);
-		$('.jpn-char-name').html(data.name_japanese);
-		$('.alt-char-name').html(data.name_alt);
-		// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
-		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-		let description = marked(data.info.replace(/~!.*?!~*/g, ''));
-		//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
-		description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
-
-		$('.long-description').html(description);
-		$('.appears-in').empty();
-		data.anime.forEach((anime) => {
-			$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
-		});			
+	const name = (data) => {
+		let n = data.name_first;
+		if(data.name_last) n += ' ' + data.name_last;
+		return n;
 	}
 
 	return {
-		queryAnilistCharacter: (query) => {
+		/*queryAnilistCharacter: (query) => {
 			getAnilistToken().then( (data) => {
 				anilistAccessToken = data; //'?access_token=' + data.access_token;
 				anilistCharSearch(query).then( (data) => { 
@@ -231,19 +220,44 @@ const Anilist = ( () => {
 				});
 			})
 			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
+		},*/
+		getCharacterData: (id, callback) => {
+			getAnilistToken().then( (data) => {
+				anilistAccessToken = data;
+				anilistCharPage(id).then( (data) => {
+					callback(data);
+				});
+			})
+			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
 		},
 		characterSearch: (query, callback) => {
 			getAnilistToken().then( (data) => {
 				anilistAccessToken = data;
 				anilistCharSearch(query).then( (data) => { 
 					callback(data);
-					// anilistCharPage(data[0].id).then( (data) => {
-// 						renderAnilistCharacterData(data);
-// 					});
-
 				});
 			})
 			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
+		},
+		render: (data) => {
+			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
+			$('.char-name').html(name(data));
+			$('.jpn-char-name').html(data.name_japanese);
+			$('.alt-char-name').html(data.name_alt);
+			// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
+			// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
+			let description = marked(data.info.replace(/~!.*?!~*/g, ''));
+			//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
+			description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
+
+			$('.long-description').html(description);
+			$('.appears-in').empty();
+			data.anime.forEach((anime) => {
+				$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+			});			
+		},
+		getName: (data) => {
+			return name(data);
 		}
 	}
 })();
@@ -263,16 +277,30 @@ const performSearch = () => {
 }
 
 const renderSearch = (data) => {
-	console.log(data);
+	//console.log(data);
+	// bad search is giving an Error object which throws an error when I try to ForEach on it
 	let html = '';
 	data.forEach( (element, index) => {
 		//const desc = element. //
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
-		html += `<div class="col-3 blue" id="${element.id}"><img src="${element.image_url_med}" alt="${element.info}"><p>${name}</p></div>`;
+		html += `<div class="col-3 blue aniCharSearch" id="${element.id}"><img src="${element.image_url_med}" alt="${element.info}"><p>${name}</p></div>`;
 	});
-	//html+= '<div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div>';
 	$('.al-search-results').html(html);
+	$('.aniCharSearch').on('click', (event) => {
+		console.log($(event.target).closest('.aniCharSearch').attr('id'));
+		event.preventDefault();
+		closeModal();
+		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
+	});
+}
+
+const createPage = (data) => {
+	Anilist.render(data);
+	const query = Anilist.getName(data) + ' ' + data.anime[0].title_english;
+	YouTube.queryYouTube(query);
+	Google.queryGoogleImages(query);
+	setLinks(Anilist.getName(data));
 }
 
 const openModal = (content) => {
