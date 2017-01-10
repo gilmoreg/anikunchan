@@ -38,13 +38,7 @@
       </div>
     <div class="links red">
       <p>Links:
-        <ul>
-          <li><a href="#" target="_blank">Wikia</a></li>
-          <li><a href="#" target="_blank">Wikipedia</a></li>
-          <li><a href="#" target="_blank">Reddit</a></li>
-          <li><a href="#" target="_blank">Pixiv</a></li>
-          <li><a href="#" target="_blank">DeviantArt</a></li>
-        </ul>
+        <ul class="links-list"></ul>
       </p>
     </div>
     </div>
@@ -56,17 +50,17 @@
           <p class="long-description"></p>
         </div>
       </div>
-      <div class="imgur-pic-container red">
+      <div class="google-image-container red">
         <div class="row green">
-          <h2>Imgur Pics</h2>
-          <div id="imgur-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
-          <div class="imgurpics col-10"></div>
-          <div id="imgur-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
+          <h2>Pictures</h2>
+          <div id="gimages-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
+          <div class="googleimages col-10"></div>
+          <div id="gimages-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
         </div>
       </div>
       <div class="youtube-videos red">
         <div class="row green">
-          <h2>YouTube Videos</h2>
+          <h2>Videos</h2>
           <div id="yt-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
           <div class="ytvids col-10"></div>
           <div id="yt-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
@@ -78,6 +72,7 @@
 
   <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
   <script src="app.js"></script>
+  <script src="marked.js"></script>
 </body>
 
 <div id="lightbox" class="modal hidden col-6">
