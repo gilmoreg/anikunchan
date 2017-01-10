@@ -10,25 +10,31 @@
 let state = {
 	searchStrings: [],
 	anilistAccessToken: {},
-	imgurPage: 0
+	imgurPage: 0,
+	googlePage: 0
 }
 
 const Google = ( () => {
+	let googlePage = state.googlePage;
 	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
 
-	const googleAPICall = (query, token, callback) => {
+	const googleAPICall = (query, callback) => {
 		const gQuery = {
 			q: query,
 			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 			cx: '017818390200612997677:nulntbij5kc',
 			searchType: 'image',
-			num: 6
+			num: 6,
+			safe: 'medium',
+			start: googlePage*6+1
 		}
 		$.getJSON(googleEndpoint, gQuery, callback);
 	}
 
 	const displayGoogleData = (data) => {
-		console.log('google',data);
+		console.log('google',googlePage, data);
+		const numResults = data.queries.request[0].totalResults;
+
 		if(data.length===0) {
 			$('.google-image-container').addClass('hidden');
 			return;
@@ -53,37 +59,39 @@ const Google = ( () => {
     	});
     	
     	// Pagination
-    	$('#yt-prev, #yt-next').off('click').removeClass('dim-arrow');
+    	$('#gimages-prev, #gimages-next').off('click').removeClass('dim-arrow');
 
-    	if(data.prevPageToken) {
-			$('#yt-prev').on('click', (event) => {
+    	if(googlePage>0) {
+			$('#gimages-prev').on('click', (event) => {
 	    		event.preventDefault();
-	    		$('#yt-prev').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
+	    		$('#gimages-prev').off('click');
+	    		googlePage--;
+	    		googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
     	else {
-    		$('#yt-prev').off('click');
-    		$('#yt-prev').addClass('dim-arrow');
+    		$('#gimages-prev').off('click');
+    		$('#gimages-prev').addClass('dim-arrow');
     	}
 
-    	if(data.nextPageToken) {
-			$('#yt-next').on('click', (event) => {
+    	if(googlePage*6 < numResults) {
+			$('#gimages-next').on('click', (event) => {
 	    		event.preventDefault();
-	    		$('#yt-next').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
+	    		$('#gimages-next').off('click');
+	    		googlePage++;
+	    		googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
     	else {
-    		$('#yt-next').off('click');
-    		$('#yt-next').addClass('dim-arrow');
+    		$('#gimages-next').off('click');
+    		$('#gimages-next').addClass('dim-arrow');
     	}
 
 	}
 
 	return {
-		queryGoogleImages: (query,token) => {
-			googleAPICall(query,token,displayGoogleData);
+		queryGoogleImages: (query) => {
+			googleAPICall(query,displayGoogleData);
 		}
 	}
 })();

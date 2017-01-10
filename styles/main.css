@@ -62,7 +62,7 @@ nav input {
 
 /* I want the container that holds these images to be responsive, but not the inner contents, so I am doing this manually rather than using col-x classes 
 TODO: make a separate class like f-col-3 for this (making sure the [class*="col-"] doesn't select it) */
-.imgurpic, .ytvid {
+.imgurpic, .ytvid, .gimage {
   text-align: center;
   padding-top: 0px;
   padding-bottom: 20px;
@@ -85,6 +85,13 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   width: 80%;
 }
 
+.gimage img {
+	padding-top: 10%;
+	width: 90%;
+	height: 100%;
+	object-fit: scale-down;
+}
+
 .links ul {
   list-style-type: none;
 }
@@ -97,6 +104,7 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
   display: inline;
 }
 
+/* For inside the modal */
 .youtube-video, .imgur-pic, .google-image {
 	height: 400px;
 	width: 100%;
