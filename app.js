@@ -98,8 +98,7 @@ const Google = ( () => {
 const YouTube = ( () => {
 	const youTubeEndpoint = 'https://www.googleapis.com/youtube/v3/search';
 	
-	const youTubeAPICall = (query, token, callback) => {	
-		console.log('youtube query',query);
+	const youTubeAPICall = (query, token, callback) => {
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
@@ -114,7 +113,6 @@ const YouTube = ( () => {
 	}
 
 	const displayData = (data) => {
-		console.log('youtube',data);
 		if(data.length===0) {
 			$('.youtube-videos').addClass('hidden');
 			return;
@@ -210,17 +208,6 @@ const Anilist = ( () => {
 	}
 
 	return {
-		/*queryAnilistCharacter: (query) => {
-			getAnilistToken().then( (data) => {
-				anilistAccessToken = data; //'?access_token=' + data.access_token;
-				anilistCharSearch(query).then( (data) => { 
-					anilistCharPage(data[0].id).then( (data) => {
-						renderAnilistCharacterData(data);
-					});
-				});
-			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
-		},*/
 		getCharacterData: (id, callback) => {
 			getAnilistToken().then( (data) => {
 				anilistAccessToken = data;
@@ -252,6 +239,10 @@ const Anilist = ( () => {
 
 			$('.long-description').html(description);
 			$('.appears-in').empty();
+			// Sorting anime by start date helps reduce bad Google results (due to ovas and shorts sometimes coming first)
+			data.anime.sort( (a,b) => {
+				return a.start_date_fuzzy - b.start_date_fuzzy;
+			});
 			data.anime.forEach((anime) => {
 				$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
 			});			
@@ -271,13 +262,10 @@ const searchModal = () => {
 
 const performSearch = () => {
 	const query = $('#al-query').val();
-	//console.log(query);
 	Anilist.characterSearch(query, renderSearch);
-	//closeModal();
 }
 
 const renderSearch = (data) => {
-	//console.log(data);
 	// bad search is giving an Error object which throws an error when I try to ForEach on it
 	let html = '';
 	data.forEach( (element, index) => {
@@ -288,7 +276,6 @@ const renderSearch = (data) => {
 	});
 	$('.al-search-results').html(html);
 	$('.aniCharSearch').on('click', (event) => {
-		console.log($(event.target).closest('.aniCharSearch').attr('id'));
 		event.preventDefault();
 		closeModal();
 		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
@@ -332,9 +319,4 @@ const setLinks = (query) => {
 
 $(document).ready(function() {
 	searchModal();
-	/*const query = 'Erika Karisawa';
-	Anilist.queryAnilist(query);
-	YouTube.queryYouTube(query);
-	Google.queryGoogleImages(query);
-	setLinks(query);*/
 });

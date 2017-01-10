@@ -6,12 +6,15 @@
 nav {
 	background-color: lightgrey;
 	padding: 5px;
-	font-size: 22px;
 }
 
 nav .logo {
 	font-style: italic;
 	outline: 1px solid red;
+}
+
+nav h1 {
+	font-size: 22px;
 }
 
 nav .search-box {
