@@ -102,6 +102,9 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 	width: 100%;
 }
 
+.dim-arrow {
+	color: white;
+}
 
 .red {
   outline: 1px solid red;

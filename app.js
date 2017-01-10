@@ -31,6 +31,12 @@ const YouTube = ( () => {
 	}
 
 	const displayData = (data) => {
+		if(data.length===0) {
+			$('.youtube-videos').addClass('hidden');
+			return;
+		}
+		$('.youtube-videos').removeClass('hidden');
+
     	let html = '';
     	data.items.forEach( (element, index) => {
     		if(element.id.videoId) {
@@ -51,8 +57,7 @@ const YouTube = ( () => {
     	});
     	
     	// Pagination
-    	$('#yt-prev').off('click');
-    	$('#yt-next').off('click');
+    	$('#yt-prev, #yt-next').off('click').removeClass('dim-arrow');
 
     	if(data.prevPageToken) {
 			$('#yt-prev').on('click', (event) => {
@@ -64,7 +69,7 @@ const YouTube = ( () => {
     	}
     	else {
     		$('#yt-prev').off('click');
-    		// Probably want to dim that arrow
+    		$('#yt-prev').addClass('dim-arrow');
     	}
 
     	if(data.nextPageToken) {
@@ -77,7 +82,7 @@ const YouTube = ( () => {
     	}
     	else {
     		$('#yt-next').off('click');
-    		// Probably want to dim that arrow
+    		$('#yt-next').addClass('dim-arrow');
     	}
 	}
 
@@ -126,12 +131,13 @@ const Anilist = ( () => {
 		// Stretch goal: show excluded text when hovered over (as anilist does)
 		// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
 		$('.long-description').html(data.info.replace(/~!.*?!~*/g, '')
-			.replace(/[<]br[^>]*[>]/gi,'')) // remove line breaks
+			.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
+			.replace(new RegExp('_', 'g'),'')) // remove underscore markdown - stretch goal would be to use it to bold text __text__
 			.append(' (Source: <a href="https://anilist.co/character/' + data.id + '/" target="_blank">anilist.co</a>)');
 		
 		$('.appears-in').empty();
 		data.anime.forEach((anime) => {
-			$('.appears-in').append('<li><a href="http://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+			$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
 		});			
 	}
 
@@ -223,6 +229,12 @@ const Imgur = ( () => {
 	}
 
 	const renderImgurData = () => {
+		if(imgurData.length===0) {
+			$('.imgur-pic-container').addClass('hidden');
+			return;
+		}
+		$('.imgur-pic-container').removeClass('hidden');
+
 		const index = imgurPage*6;
 		let html = '';
 		for(let i=index;i<index+6; i++) {
@@ -246,8 +258,7 @@ const Imgur = ( () => {
     	});
 
     	// Pagination
-    	$('#imgur-prev').off('click');
-    	$('#imgur-next').off('click');
+    	$('#imgur-prev, #imgur-next').off('click').removeClass('dim-arrow');
 
     	if(imgurPage>0) {
     		$('#imgur-prev').on('click', (event) => {
@@ -258,10 +269,10 @@ const Imgur = ( () => {
 	    	});
     	}
     	else {
-    		// dim that arrow
+    		$('#imgur-prev').addClass('dim-arrow');
     	}
 
-    	if( (imgurPage*6) < imgurData.length ) {
+    	if( (imgurPage*6) > (imgurData.length-1) ) {
     		$('#imgur-next').on('click', (event) => {
 	    		event.preventDefault();
 	    		$('#imgur-next').off('click');
@@ -270,7 +281,7 @@ const Imgur = ( () => {
 	    	});
     	}
     	else {
-    		// dim that arrow
+    		$('#imgur-next').addClass('dim-arrow');
     	}
 	}
 
@@ -304,7 +315,7 @@ const closeModal = () => {
 
 $(document).ready(function() {
 	//searchModal();
-	const query = 'shinobu oshino';
+	const query = 'Ackerman, Mikasa';
 	Anilist.queryAnilist(query);
 	Imgur.queryImgur(query);
 	YouTube.queryYouTube(query);
