@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Anikunchan - Everything about your favorite anime characters!</title>
+  <meta charset="utf-8" name="description" content="Get statistics, bios, fan art and more for your favorite anime characters">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css">
+  <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link rel="stylesheet" href="styles/inline-block-grid.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/modal.css">
+</head>
+<nav>
+  <div class="row header">
+    <div class="col-1"></div>
+    <div class="col-2 logo">Anikunchan</div>
+  </div>
+</nav>
+<body>
+  <div class="overlay"></div>
+  <div class="row">
+    <div class="col-1 infoblock"></div>
+    <!-- Left Column -->
+    <div class="col-4 infoblock">
+      <div class="portrait red">
+        <p class="portrait-image red"></p>
+        <h1 class="char-name"></h1>
+        <h5 class="jpn-char-name"></h5>
+        <h5 class="alt-char-name"></h5>
+        <p class="description green"></p>
+      </div>
+      <div class="green">
+        <p>Appears in:
+          <ul class="appears-in"></ul>
+        </p>
+      </div>
+    <div class="links red">
+      <p>Links:
+        <ul class="links-list"></ul>
+      </p>
+    </div>
+    </div>
+    <!-- Right column -->
+    <div class="col-6 red">
+      <div class="summary">
+        <div class="row green">
+          <h2>Summary</h2>
+          <p class="long-description"></p>
+        </div>
+      </div>
+      <div class="google-image-container red">
+        <div class="row green">
+          <h2>Pictures</h2>
+          <div id="gimages-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
+          <div class="googleimages col-10"></div>
+          <div id="gimages-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
+        </div>
+      </div>
+      <div class="youtube-videos red">
+        <div class="row green">
+          <h2>Videos</h2>
+          <div id="yt-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
+          <div class="ytvids col-10"></div>
+          <div id="yt-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
+        </div>
+      </div>
+  </div>
+  <div class="col-1 infoblock"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+  <script src="app.js"></script>
+  <script src="marked.js"></script>
+</body>
+
+<div id="lightbox" class="modal hidden col-6">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <div class="modal-content green"></div>
+</div>
+
+</html>
+
+<!-- 
+
+
+-->
