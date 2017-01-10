@@ -221,7 +221,7 @@ const Anilist = ( () => {
 	}
 
 	return {
-		queryAnilist: (query) => {
+		queryAnilistCharacter: (query) => {
 			getAnilistToken().then( (data) => {
 				anilistAccessToken = data; //'?access_token=' + data.access_token;
 				anilistCharSearch(query).then( (data) => { 
@@ -231,14 +231,48 @@ const Anilist = ( () => {
 				});
 			})
 			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
+		},
+		characterSearch: (query, callback) => {
+			getAnilistToken().then( (data) => {
+				anilistAccessToken = data;
+				anilistCharSearch(query).then( (data) => { 
+					callback(data);
+					// anilistCharPage(data[0].id).then( (data) => {
+// 						renderAnilistCharacterData(data);
+// 					});
+
+				});
+			})
+			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
 		}
 	}
 })();
 
 const searchModal = () => {
-	let html = '<div class="search-box red"><input type="text" name="search" placeholder="Type a character name"> <i class="fa fa-search" aria-hidden="true"></i></div>';
-	html+= '<div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div>';
+	let html = '<div class="search-box red">' + 
+	'<form id="al-search-form" action="javascript:performSearch()"><input id="al-query" type="text" name="search" placeholder="Type a character name" required>' + 
+	' <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button></form></div><div class="al-search-results"</div>';
 	openModal(html);
+}
+
+const performSearch = () => {
+	const query = $('#al-query').val();
+	//console.log(query);
+	Anilist.characterSearch(query, renderSearch);
+	//closeModal();
+}
+
+const renderSearch = (data) => {
+	console.log(data);
+	let html = '';
+	data.forEach( (element, index) => {
+		//const desc = element. //
+		let name = element.name_first;
+		if(element.name_last) name += ' ' + element.name_last;
+		html += `<div class="col-3 blue" id="${element.id}"><img src="${element.image_url_med}" alt="${element.info}"><p>${name}</p></div>`;
+	});
+	//html+= '<div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div><div class="col-3 blue">p</div>';
+	$('.al-search-results').html(html);
 }
 
 const openModal = (content) => {
