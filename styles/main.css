@@ -104,7 +104,9 @@ h2 {
   padding-right: 10px;
 }
 
-.googleimages, .youtube-videos {
+.youtube-videos, .googleimages {
+	text-align: center;
+	margin-top: 10px;
 	display: inline-flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
@@ -116,12 +118,12 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 .ytvid, .gimage {
   text-align: center;
   padding-top: 0px;
-  padding-bottom: 20px;
   display: inline-block;
   margin-right: -0.2em; /* clearfix */
-  width: 33.33%;
+  width: 30%;
   height: 150px;
   flex-basis: auto; 
+  margin: 3px;
 }
 
 .ytvid {
@@ -135,10 +137,9 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 }
 
 .gimage img {
-	padding-top: 10%;
 	width: 90%;
 	height: 100%;
-	object-fit: scale-down;
+	object-fit: cover;
 }
 
 /* For inside the modal */

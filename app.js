@@ -43,7 +43,7 @@ const Google = ( () => {
 		let html = '';
     	data.items.forEach( (element, index) => {
     		if(element.image) {
-    			html += `<div class="gimage red" link="${element.link}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
+    			html += `<div class="gimage" link="${element.link}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
     		}
     	});
 
