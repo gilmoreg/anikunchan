@@ -9,18 +9,27 @@ nav {
 	font-size: 22px;
 }
 
+nav .header {
+	height: 2em;
+}
+
 nav .logo {
 	font-style: italic;
-	outline: 1px solid red;
+	height: 100%;
 }
 
 nav h1 {
 	font-size: 22px;
+	margin-top: 0.5em;
 }
 
-nav .search-box {
-	text-align: right;
-	outline: 1px solid orange;
+nav .search-button {
+	font-weight: bold;
+	height: 75%;
+	padding-top: 5px;
+	margin-top: 5px;
+	text-align: center;
+	background-color: darkgrey;
 }
 
 nav input {
@@ -110,7 +119,10 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 
 /* For inside the modal */
 .youtube-video, .imgur-pic, .google-image {
-	height: 400px;
+	height: 90%;
+}
+
+.youtube-video {
 	width: 100%;
 }
 
