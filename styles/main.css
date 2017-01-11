@@ -132,8 +132,11 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 }
 
 .ytvid img {
-  padding-top: 10%;
   width: 80%;
+}
+
+.ytvid p {
+	margin-top: 1px;
 }
 
 .gimage img {
