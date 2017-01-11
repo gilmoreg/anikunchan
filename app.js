@@ -239,13 +239,13 @@ const Anilist = ( () => {
 			description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
 
 			$('.long-description').html(description);
-			$('.appears-in').empty();
+			$('.appears-in-list').empty();
 			// Sorting anime by start date helps reduce bad Google results (due to ovas and shorts sometimes coming first)
 			data.anime.sort( (a,b) => {
 				return a.start_date_fuzzy - b.start_date_fuzzy;
 			});
 			data.anime.forEach((anime) => {
-				$('.appears-in').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+				$('.appears-in-list').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
 			});			
 		},
 		getName: (data) => {

@@ -4,7 +4,7 @@
 }
 
 nav {
-	background-color: lightgrey;
+	background-color: rgba(12,13,14,0.86);
 	padding: 5px;
 	font-size: 22px;
 }
@@ -16,6 +16,7 @@ nav .header {
 nav .logo {
 	font-style: italic;
 	height: 100%;
+	color: #00c2ff;
 }
 
 nav h1 {
@@ -40,29 +41,41 @@ body {
 	background-color: #f5f5f5;
 }
 
-.infoblock {
-  /* Keeping this here for now - remove later */
-  outline: 1px solid black;
-}
-
 .portrait h1,h5 {
-	padding-left: 20px;
+	padding-left: 5px;
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
 
-.portrait .description {
-	padding-left: 20px;
-	padding-right: 20px;
+.portrait {
+	padding: 5px 20px 10px 20px;
+	background-color: lightgrey;
+	margin: 5px;
 }
 
 .portrait-image {
 	text-align: center;
 }
 
-.appears-in, .summary, .links-list {
+.portrait-image img {
+	object-fit: scale-down;
+	width: 100%;
+}
+
+.appears-in, .links {
+    margin: 5px;
+    padding: 5px 5px 1px 5px;
+    background-color: lightgrey;
+}
+
+.appears-in-list, .summary, .links-list {
 	padding-left: 20px;
 	padding-right: 20px;
+}
+
+ul {
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 .summary h2 {
