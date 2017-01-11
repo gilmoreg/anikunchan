@@ -113,25 +113,27 @@ const YouTube = ( () => {
 
 	const displayData = (data) => {
 		if(data.length===0) {
-			$('.youtube-videos').addClass('hidden');
+			$('.youtube-video-container').addClass('hidden');
 			return;
 		}
-		$('.youtube-videos').removeClass('hidden');
+		$('.youtube-video-container').removeClass('hidden');
 
     	let html = '';
     	data.items.forEach( (element, index) => {
     		if(element.id.videoId) {
     			const snippet = element.snippet;
     			// QUESTION: is using id like this a good idea? (puts the Youtube video ID in the html to be retreived by javascript, i.e. storing data in the DOM)
-    			html += `<div class="ytvid ytvid-embed red" id="${element.id.videoId}"><img src="${snippet.thumbnails.default.url}" alt="${snippet.title}"></div>`;
+    			let title = snippet.title;
+    			if(title.length > 50) title = title.substring(0,50) + '...';
+    			html += `<div class="ytvid ytvid-embed red" id="${element.id.videoId}"><img src="${snippet.thumbnails.default.url}" alt="${title}"><p>${title}</p></div>`;
     		}
     	});
 
     	// HTML
-    	$('.ytvids').html(html);
+    	$('.youtube-videos').html(html);
 
     	// Event handlers
-    	$('.ytvids').on('click','.ytvid', (event) => {
+    	$('.youtube-videos').on('click','.ytvid', (event) => {
     		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" class="youtube-video"></iframe>`;
     		openModal(html);
     	});
@@ -293,6 +295,7 @@ const createPage = (data) => {
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
 	setLinks(Anilist.getName(data));
+	$('.background').removeClass('hidden');
 }
 
 const openModal = (content) => {

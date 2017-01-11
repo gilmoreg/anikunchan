@@ -23,7 +23,7 @@
 </nav>
 <body>
   <div class="overlay"></div>
-  <div class="row">
+  <div class="row background hidden">
     <div class="col-1"></div>
     <!-- Left Column -->
     <div class="col-4 infoblock">
@@ -34,19 +34,11 @@
         <h5 class="alt-char-name"></h5>
         <p class="description green"></p>
       </div>
-      <div class="green">
-        <p>Appears in:
-          <ul class="appears-in"></ul>
-        </p>
-      </div>
-    <div class="links red">
-      <p>Links:
-        <ul class="links-list"></ul>
-      </p>
-    </div>
+      <div class="green">Appears in:<ul class="appears-in"></ul></div>
+      <div class="links red">Links:<ul class="links-list"></ul></div>
     </div>
     <!-- Right column -->
-    <div class="col-6 red">
+    <div class="col-6 red character-data">
       <div class="summary">
         <div class="row green">
           <h2>Summary</h2>
@@ -55,18 +47,26 @@
       </div>
       <div class="google-image-container red">
         <div class="row green">
-          <h2>Pictures</h2>
-          <div id="gimages-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
-          <div class="googleimages col-10"></div>
-          <div id="gimages-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
+          <div class="row green">
+            <h2>Images</h2>
+          </div>
+          <div class="row green googleimages"></div>
+          <div class="row green pagination">
+            <button id="gimages-prev" class="nav-arrow">Prev</button>
+            <button id="gimages-next" class="nav-arrow">Next</button>
+          </div>
         </div>
       </div>
-      <div class="youtube-videos red">
+      <div class="youtube-video-container red">
         <div class="row green">
-          <h2>Videos</h2>
-          <div id="yt-prev" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-left" aria-hidden="true"></i></div>
-          <div class="ytvids col-10"></div>
-          <div id="yt-next" class="col-1 nav-arrow green"><i class="fa fa-5x fa-caret-right" aria-hidden="true"></i></div>
+          <div class="row green">
+            <h2>Videos</h2>
+          </div>
+          <div class="row green youtube-videos"></div>
+          <div class="row green pagination">
+            <button id="yt-prev" class="nav-arrow">Prev</button>
+            <button id="yt-next" class="nav-arrow">Next</button>
+          </div>
         </div>
       </div>
   </div>

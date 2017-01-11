@@ -36,6 +36,10 @@ nav input {
 	width: 80%;
 }
 
+body {
+	background-color: #f5f5f5;
+}
+
 .infoblock {
   /* Keeping this here for now - remove later */
   outline: 1px solid black;
@@ -56,7 +60,7 @@ nav input {
 	text-align: center;
 }
 
-.appears-in, .links, .summary, .twitter-pics, .youtube-videos {
+.appears-in, .summary, .links-list {
 	padding-left: 20px;
 	padding-right: 20px;
 }
@@ -65,32 +69,44 @@ nav input {
   margin-bottom: 0px;
 }
 
+.character-data {
+	padding-bottom: 50px;
+}
+
+.pagination {
+	text-align: center;
+}
+
 .nav-arrow {
-  /* These are temporary values - need a more accurate solution */
-  padding-top: 15%;
-  padding-bottom: 15%;
-  text-align: center;
   color: grey;
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.googleimages, .youtube-videos {
+	display: inline-flex;
+	justify-content: space-around;
+	flex-flow: row wrap;
+	font-size: 9px;
 }
 
 /* I want the container that holds these images to be responsive, but not the inner contents, so I am doing this manually rather than using col-x classes 
 TODO: make a separate class like f-col-3 for this (making sure the [class*="col-"] doesn't select it) */
-.imgurpic, .ytvid, .gimage {
+.ytvid, .gimage {
   text-align: center;
   padding-top: 0px;
   padding-bottom: 20px;
   display: inline-block;
   margin-right: -0.2em; /* clearfix */
   width: 33.33%;
-  height: 200px; 
+  height: 150px;
+  flex-basis: auto; 
 }
 
-/* Can I combine these two into a single selector? .imgurpic,.ytvid img {} doesn't work */
-.imgurpic img {
-  padding-top: 10%;
-  width: 90%;
-  height: 100%;
-  object-fit: scale-down;
+.ytvid {
+	height: 160px;
+	width: 33%;
 }
 
 .ytvid img {
@@ -105,25 +121,11 @@ TODO: make a separate class like f-col-3 for this (making sure the [class*="col-
 	object-fit: scale-down;
 }
 
-.links ul {
-  list-style-type: none;
-}
-
-.links li::before {
-  content: " - ";
-}
-
-.links li {
-  display: inline;
-}
-
 /* For inside the modal */
-.youtube-video, .imgur-pic, .google-image {
-	height: 90%;
-}
-
-.youtube-video {
+.youtube-video, .google-image {
+	object-fit: scale-down;
 	width: 100%;
+	height: 90%;
 }
 
 .dim-arrow {
