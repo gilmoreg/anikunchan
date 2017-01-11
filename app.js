@@ -257,6 +257,7 @@ const searchModal = () => {
 	'<form id="al-search-form" action="javascript:performSearch()"><input id="al-query" type="text" name="search" placeholder="Type a character name" required>' + 
 	' <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button></form></div><div class="al-search-results"</div>';
 	openModal(html);
+	$('#al-query').focus();
 }
 
 const performSearch = () => {
@@ -268,11 +269,15 @@ const performSearch = () => {
 const renderSearch = (data) => {
 	// bad search is giving an Error object which throws an error when I try to ForEach on it
 	let html = '';
+	if(data.error) {
+		$('.al-search-results').html("No results");
+		return;
+	}
 	data.forEach( (element, index) => {
 		//const desc = element. //
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
-		html += `<div class="col-3 blue aniCharSearch" id="${element.id}"><img src="${element.image_url_med}" alt="${element.info}"><p>${name}</p></div>`;
+		html += `<div class="col-3 blue aniCharSearch" id="${element.id}"><img src="${element.image_url_med}" alt="${name}"><p>${name}</p></div>`;
 	});
 	$('.al-search-results').html(html);
 	$('.aniCharSearch').on('click', (event) => {
