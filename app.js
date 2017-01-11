@@ -24,9 +24,9 @@ const Google = ( () => {
 			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 			cx: '017818390200612997677:nulntbij5kc',
 			searchType: 'image',
-			num: 6,
+			num: 8,
 			safe: 'medium',
-			start: googlePage*6+1
+			start: googlePage*8+1
 		}
 		$.getJSON(googleEndpoint, gQuery, callback);
 	}
@@ -102,7 +102,7 @@ const YouTube = ( () => {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 		    type: 'video',
-		    maxResults: '6',
+		    maxResults: '4',
 		    pageToken: token,
 		    videoEmbeddable: true,
 		    safeSearch: 'moderate',
@@ -125,7 +125,7 @@ const YouTube = ( () => {
     			// QUESTION: is using id like this a good idea? (puts the Youtube video ID in the html to be retreived by javascript, i.e. storing data in the DOM)
     			let title = snippet.title;
     			if(title.length > 50) title = title.substring(0,50) + '...';
-    			html += `<div class="ytvid ytvid-embed red" id="${element.id.videoId}"><img src="${snippet.thumbnails.default.url}" alt="${title}"><p>${title}</p></div>`;
+    			html += `<div class="ytvid" id="${element.id.videoId}"><div class="yt-thumb"><img src="${snippet.thumbnails.default.url}" alt="${title}"></div><div class="yt-desc">${title}</div></div>`;
     		}
     	});
 
