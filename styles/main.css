@@ -78,13 +78,13 @@ ul {
 	margin-bottom: 5px;
 }
 
-.summary {
+.summary, .google-image-container, .youtube-video-container {
 	margin-top: 5px;
 	padding: 10px;
 	background-color: lightgrey;
 }
 
-.summary h2 {
+h2 {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
