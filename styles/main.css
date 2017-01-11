@@ -59,7 +59,7 @@ body {
 
 .portrait-image img {
 	object-fit: scale-down;
-	width: 100%;
+	width: 255px;
 }
 
 .appears-in, .links {
@@ -68,7 +68,7 @@ body {
     background-color: lightgrey;
 }
 
-.appears-in-list, .summary, .links-list {
+.appears-in-list, .links-list {
 	padding-left: 20px;
 	padding-right: 20px;
 }
@@ -78,8 +78,15 @@ ul {
 	margin-bottom: 5px;
 }
 
+.summary {
+	margin-top: 5px;
+	padding: 10px;
+	background-color: lightgrey;
+}
+
 .summary h2 {
-  margin-bottom: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
 }
 
 .character-data {
