@@ -248,22 +248,18 @@ const Anilist = ( () => {
 	}
 })();
 
-const searchModal = () => {
-	let html = '<div class="search-box">' + 
-	'<form id="al-search-form" action="javascript:performSearch()"><input id="al-query" type="text" name="search" placeholder="Type a character name" required>' + 
-	' <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button></form></div><div class="al-search-results"</div>';
-	openModal(html);
+const search = () => {
+	$('.search').removeClass('hidden');
 	$('#al-query').focus();
 }
 
 const performSearch = () => {
 	const query = $('#al-query').val();
 	Anilist.characterSearch(query, renderSearch);
-	//closeModal();
 }
 
 const renderSearch = (data) => {
-	// bad search is giving an Error object which throws an error when I try to ForEach on it
+	$('.search').removeClass('hidden');
 	let html = '';
 	if(data.error) {
 		$('.al-search-results').html("No results");
@@ -284,7 +280,7 @@ const renderSearch = (data) => {
 	$('.al-search-results').html(html);
 	$('.aniCharSearch').on('click', (event) => {
 		event.preventDefault();
-		closeModal();
+		$('.search').addClass('hidden');
 		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
 	});
 }
@@ -326,5 +322,5 @@ const setLinks = (query) => {
 }
 
 $(document).ready(function() {
-	searchModal();
+	search();
 });

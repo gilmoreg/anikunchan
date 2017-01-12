@@ -14,15 +14,21 @@
 </head>
 <nav>
   <div class="row header">
-    <div class="col-1"></div>
-    <div class="col-2 logo"><h1>Anikunchan</h1></div>
-    <div class="col-6"></div>
-    <div class="col-2 search-button" onclick="searchModal()">Search</div>
-    <div class="col-1"></div>
+    <div class="logo" onclick="search()">Anikunchan</div>
+    <div class="search-box">
+      <form id="al-search-form" action="javascript:performSearch()">
+        <input id="al-query" type="text" name="search" placeholder="Type a character name" required> 
+        <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button>
+      </form>
+    </div>
   </div>
 </nav>
 <body>
   <div class="overlay"></div>
+  <div class="row search hidden">
+    
+    <div class="al-search-results"></div>
+  </div>
   <div class="row background hidden">
     <div class="col-1"></div>
     <!-- Left Column -->

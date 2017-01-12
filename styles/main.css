@@ -10,7 +10,6 @@ nav {
 }
 
 nav .header {
-	height: 2em;
 }
 
 nav .logo {
@@ -22,6 +21,10 @@ nav .logo {
 nav h1 {
 	font-size: 22px;
 	margin-top: 0.5em;
+}
+
+nav .search-box {
+	text-align: center;
 }
 
 nav .search-button {
@@ -162,6 +165,7 @@ h2 {
 	display: flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
+	background-color: #355a6f;
 }
 
 .aniCharSearch {
@@ -182,6 +186,9 @@ h2 {
 	object-fit: contain;
 }
 
+.aniCharSearch:hover {
+	background-color: #fff8cc;
+}
 
 .red {
   outline: 1px solid red;
