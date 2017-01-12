@@ -108,7 +108,7 @@ const YouTube = ( () => {
 	}
 
 	const displayData = (data) => {
-		if(data.length===0) {
+		if(data.items.length===0) {
 			$('.youtube-video-container').addClass('hidden');
 			return;
 		}
