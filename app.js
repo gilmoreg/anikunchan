@@ -19,9 +19,9 @@ const Google = ( () => {
 			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 			cx: '017818390200612997677:nulntbij5kc',
 			searchType: 'image',
-			num: 8,
+			num: 6,
 			safe: 'medium',
-			start: googlePage*8+1
+			start: googlePage*6+1
 		}
 		$.getJSON(googleEndpoint, gQuery, callback);
 	}
@@ -29,7 +29,7 @@ const Google = ( () => {
 	const displayGoogleData = (data) => {
 		const numResults = data.queries.request[0].totalResults;
 
-		if(data.length===0) {
+		if(numResults===0) {
 			$('.google-image-container').addClass('hidden');
 			return;
 		}
