@@ -1,11 +1,5 @@
 'use strict';
 /*
-	Working notes:
-
-	Anilist character search is pretty finicky and doesn't return some expected results, but there really isn't a better source
-
-	Certain searches, especially for characters with no last names, don't make for good Imgur or Youtube searches
-
 */
 let state = {
 	searchStrings: [],
@@ -279,7 +273,13 @@ const renderSearch = (data) => {
 		//const desc = element. //
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
-		html += `<div class="col-3 blue aniCharSearch" id="${element.id}"><img src="${element.image_url_med}" alt="${name}"><p>${name}</p></div>`;
+		html += 
+		`<div class="col-3 aniCharSearch" id="${element.id}">` +
+			`<div class="ani-search-thumb">` +
+				`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
+			`</div>` +
+			`<div class="ani-search-name">${name}</div>` +
+		`</div>`;
 	});
 	$('.al-search-results').html(html);
 	$('.aniCharSearch').on('click', (event) => {

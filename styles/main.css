@@ -113,22 +113,7 @@ h2 {
 	flex-flow: row wrap;
 }
 
-.gimage {
-/*	text-align: center;
-	padding-top: 0px;
-	display: inline-block;
-	margin-right: -0.2em; /* clearfix 
-	width: 30%;
-	height: 150px;
-	margin: 3px;*/
-	width: 155px;
-	height: 170px;
-	padding: 10px;
-	background-color: #d6e3e6;
-	margin: 5px;
-}
-
-.ytvid {
+.gimage, .ytvid {
 	width: 155px;
 	height: 170px;
 	padding: 10px;
@@ -159,6 +144,10 @@ h2 {
 	object-fit: cover;
 }
 
+.dim-arrow {
+	color: rgba(255,255,255,20);
+}
+
 /* For inside the modal */
 .youtube-video, .google-image {
 	object-fit: contain;
@@ -166,9 +155,33 @@ h2 {
 	height: 90%;
 }
 
-.dim-arrow {
-	color: rgba(255,255,255,20);
+/* Might merge these with identical rules above, or they might need individual styling */
+.al-search-results {
+	text-align: center;
+	margin-top: 10px;
+	display: flex;
+	justify-content: space-around;
+	flex-flow: row wrap;
 }
+
+.aniCharSearch {
+	width: 155px;
+	height: 200px;
+	padding: 10px;
+	background-color: #d6e3e6;
+	margin: 5px;
+}
+
+.aniCharSearch p {
+	width: 100%;
+}
+
+.aniCharSearch img {
+	width: 90%;
+	height: 150px;
+	object-fit: contain;
+}
+
 
 .red {
   outline: 1px solid red;
