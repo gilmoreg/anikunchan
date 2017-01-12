@@ -14,13 +14,14 @@
 </head>
 <nav>
   <div class="row header">
-    <div class="logo" onclick="search()">Anikunchan</div>
+    <div class="logo">Anikunchan</div>
     <div class="search-box">
       <form id="al-search-form" action="javascript:search()">
-        <input id="al-query" type="text" name="search" placeholder="Type a character name" required> 
+        <input id="al-query" type="text" name="search" placeholder="Type a name" required> 
         <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button>
       </form>
     </div>
+    <div class="toggle-results" onclick="toggleResults()"><i class="fa fa-chevron-down" aria-hidden="true"></i></div>
   </div>
 </nav>
 <body>

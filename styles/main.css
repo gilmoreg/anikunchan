@@ -37,7 +37,16 @@ nav .search-button {
 }
 
 nav input {
-	width: 80%;
+	width: 50%;
+}
+
+.toggle-results {
+	position: relative;
+	top: 100%;
+	left: 0;
+	width: 100%;
+	text-align: center;
+	color: lightgrey;
 }
 
 body {

@@ -214,7 +214,6 @@ const Anilist = ( () => {
 	}
 
 	const animeTitle = (data) => {
-		console.log('animeTitle',data);
 		if(data.series_type) return data.title_english || data.title_romaji || data.title_japanese || "";
 		else if(data.anime[0]) return data.anime[0].title_english || data.anime[0].title_romaji || data.anime[0].title_japanese || "";
 		else return "";
@@ -358,10 +357,18 @@ const CharacterPage = ( () => {
 
 const search = () => {
 	Search.performSearch();
+	$('#al-query').blur();
+}
+
+const toggleResults = () => {
+	console.log('toggling');
+	$('.search').toggleClass('hidden');
 }
 
 const closeModal = () => {
 	CharacterPage.closeModal();
 }
 
-$(document).ready(function() {});
+$(document).ready(function() {
+	$('#al-query').focus();
+});
