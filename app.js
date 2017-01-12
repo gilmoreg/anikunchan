@@ -50,7 +50,7 @@ const Google = ( () => {
     		const src = $(event.target).closest('.gimage').attr('link');
     		const link = $(event.target).closest('.gimage').attr('contextLink');
     		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
-    		openModal(html);
+    		CharacterPage.openModal(html);
     	});
     	
     	// Pagination
@@ -131,7 +131,7 @@ const YouTube = ( () => {
     	// Event handlers
     	$('.youtube-videos').on('click','.ytvid', (event) => {
     		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" class="youtube-video"></iframe>`;
-    		openModal(html);
+    		CharacterPage.openModal(html);
     	});
     	
     	// Pagination
@@ -192,6 +192,25 @@ const Anilist = ( () => {
 		});
 	}
 
+	const recursiveSearch = (query, set) => {
+		getAnilistToken().then( (data) => {
+			if(data) anilistAccessToken = data;
+			anilistCharSearch(query).then( (data) => { 
+				set = set.concat(data);
+				if(data.length>=20) {
+					anilistPage++;
+					recursiveSearch(query, set);
+				}
+				else {
+					return new Promise( (resolve,reject) => { 
+						resolve(set); 
+					});
+				}
+			});
+		})
+		.catch( (msg) => { console.log('err recursiveSearch',msg); }); // This is not working - not catching errors earlier in the chain;
+	}
+
 	const anilistCharPage = (id) => {
 		return new Promise( (resolve,reject) => {
 			resolve( $.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`) );
@@ -219,18 +238,14 @@ const Anilist = ( () => {
 					callback(data);
 				});
 			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
+			
 		},
-		characterSearch: (query, callback, next) => {
-			if(next) { anilistPage++; } 
-			else { anilistPage=1; }
-			getAnilistToken().then( (data) => {
-				if(data) anilistAccessToken = data;
-				anilistCharSearch(query).then( (data) => { 
-					callback(data);
-				});
+		characterSearch: (query, callback) => {
+			anilistPage = 1;
+			recursiveSearch(query,[]).then( (data) => {
+				callback(data);
 			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
+			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain;	*/
 		},
 		render: (data) => {
 			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
@@ -263,48 +278,50 @@ const Anilist = ( () => {
 	}
 })();
 
-const search = () => {
-	$('.search').removeClass('hidden');
-	$('#al-query').focus();
-}
+const Search = ( () => {
+	const renderSearch = (data) => {
+		if(data.error) {
+			$('.al-search-results').html("No results");
+			return;
+		}
+		$('.search').removeClass('hidden');
+		let html = '';
+		data.forEach( (element) => {
+			html+=buildSearchResult(element);
+		});
+		if(data.length>=20) html+=`<button onclick="more()">more results....</button>`;
 
-const performSearch = () => {
-	const query = $('#al-query').val();
-	Anilist.characterSearch(query, renderSearch);
-}
-
-const renderSearch = (data) => {
-	$('.search').removeClass('hidden');
-	let html = '';
-	if(data.error) {
-		$('.al-search-results').html("No results");
-		return;
+		$('.al-search-results').html(html);
+		$('.aniCharSearch').on('click', (event) => {
+			event.preventDefault();
+			$('.search').addClass('hidden');
+			Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
+		});
 	}
-	data.forEach( (element, index) => {
+
+	const buildSearchResult = (element) => {
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
-		html += 
-		`<div class="col-3 aniCharSearch" id="${element.id}">` +
-			`<div class="ani-search-thumb">` +
-				`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
-			`</div>` +
-			`<div class="ani-search-name">${name}</div>` +
-		`</div>`;
-	});
-	if(data.length>=20) html+=`<button onclick="more()">more results....</button>`;
-	$('.al-search-results').html(html);
-	$('.aniCharSearch').on('click', (event) => {
-		event.preventDefault();
-		$('.search').addClass('hidden');
-		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
-	});
-}
+		return `<div class="col-3 aniCharSearch" id="${element.id}">` +
+				`<div class="ani-search-thumb">` +
+					`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
+				`</div>` +
+				`<div class="ani-search-name">${name}</div>` +
+			`</div>`;
+	}
 
-const more = () => {
-	$('.more-button').addClass('hidden');
-	const query = $('#al-query').val();
-	Anilist.characterSearch(query, renderAdditionalResults, true);
-}
+	return {
+		search: () => {
+			$('.search').removeClass('hidden');
+			$('#al-query').focus();
+		},
+		performSearch: () => {
+			const query = $('#al-query').val();
+			Anilist.characterSearch(query, renderSearch);
+		},
+
+	}
+})();
 
 const renderAdditionalResults = (data) => {
 	$('.search').removeClass('hidden');
@@ -332,46 +349,59 @@ const renderAdditionalResults = (data) => {
 	$('.aniCharSearch').on('click', (event) => {
 		event.preventDefault();
 		$('.search').addClass('hidden');
-		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
+		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
 	});
 }
 
-const createPage = (data) => {
-	Anilist.render(data);
-	const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
-	YouTube.queryYouTube(query);
-	Google.queryGoogleImages(query);
-	setLinks(Anilist.getName(data));
-	$('.background').removeClass('hidden');
-}
+const CharacterPage = ( () => {
+	
+	const setLinks = (query) => {
+		let q = encodeURIComponent(query);
+		let html = '';
+		html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
+		html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
+		html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
+		html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
+		html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
+		$('.links-list').html(html);
+	}
 
-const openModal = (content) => {
-	$('.modal-content').html(content);
-	$('.overlay').addClass('dim');
-	$('#lightbox').removeClass('hidden');
-	$('.overlay').on('click', (event) => {
-		closeModal();
-	});
+	const closeModal = () => {
+		$('.modal-content').empty();
+		$('.overlay').removeClass('dim');
+		$('#lightbox').addClass('hidden');
+		$('.overlay').off('click');
+	}
+
+	return {
+		createPage: (data) => {
+			Anilist.render(data);
+			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
+			YouTube.queryYouTube(query);
+			Google.queryGoogleImages(query);
+			setLinks(Anilist.getName(data));
+			$('.background').removeClass('hidden');
+		},
+		openModal: (content) => {
+			$('.modal-content').html(content);
+			$('.overlay').addClass('dim');
+			$('#lightbox').removeClass('hidden');
+			$('.overlay').on('click', (event) => {
+				closeModal();
+			});
+		},
+		closeModal: () => {
+			closeModal();
+		}
+	}
+})();	
+
+const search = () => {
+	Search.performSearch();
 }
 
 const closeModal = () => {
-	$('.modal-content').empty();
-	$('.overlay').removeClass('dim');
-	$('#lightbox').addClass('hidden');
-	$('.overlay').off('click');
+	CharacterPage.closeModal();
 }
 
-const setLinks = (query) => {
-	let q = encodeURIComponent(query);
-	let html = '';
-	html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
-	html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
-	html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
-	html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
-	html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
-	$('.links-list').html(html);
-}
-
-$(document).ready(function() {
-	search();
-});
+$(document).ready(function() {});
