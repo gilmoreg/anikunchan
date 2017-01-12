@@ -281,7 +281,6 @@ const renderSearch = (data) => {
 		return;
 	}
 	data.forEach( (element, index) => {
-		//const desc = element. //
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
 		html += 
@@ -304,18 +303,18 @@ const renderSearch = (data) => {
 const more = () => {
 	$('.more-button').addClass('hidden');
 	const query = $('#al-query').val();
-	Anilist.characterSearch(query, renderSearch, true);
+	Anilist.characterSearch(query, renderAdditionalResults, true);
 }
 
 const renderAdditionalResults = (data) => {
 	$('.search').removeClass('hidden');
 	let html = '';
 	if(data.error) {
-		$('.al-search-results').html("No results");
+		// TODO this will be ugly
+		$('.al-search-results').append("No more results");
 		return;
 	}
 	data.forEach( (element, index) => {
-		//const desc = element. //
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
 		html += 
@@ -340,7 +339,6 @@ const renderAdditionalResults = (data) => {
 const createPage = (data) => {
 	Anilist.render(data);
 	const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
-	console.log('createPage',query);
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
 	setLinks(Anilist.getName(data));
