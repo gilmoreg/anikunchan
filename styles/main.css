@@ -147,6 +147,10 @@ h2 {
 	object-fit: cover;
 }
 
+.gimage:hover, .ytvid:hover {
+	background-color: #fff8cc;
+}
+
 .dim-arrow {
 	color: rgba(255,255,255,20);
 }

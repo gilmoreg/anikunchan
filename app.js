@@ -37,7 +37,7 @@ const Google = ( () => {
 		let html = '';
     	data.items.forEach( (element, index) => {
     		if(element.image) {
-    			html += `<div class="gimage" link="${element.link}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
+    			html += `<div class="gimage" link="${element.link}" contextLink="${element.image.contextLink}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
     		}
     	});
 
@@ -46,8 +46,9 @@ const Google = ( () => {
 
     	// Event handlers
     	$('.googleimages').on('click','.gimage', (event) => {
-    		const link = $(event.target).closest('.gimage').attr('link');
-    		let html = `<a href="${link}" target="_blank"><img src="${link}" class="google-image"></a>`;
+    		const src = $(event.target).closest('.gimage').attr('link');
+    		const link = $(event.target).closest('.gimage').attr('contextLink');
+    		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
     		openModal(html);
     	});
     	
@@ -173,7 +174,7 @@ const Anilist = ( () => {
 	let anilistAccessToken = state.anilistAccessToken;
 
 	const getAnilistToken = () => {
-		//if(Date.now() < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
+		if((Date.now()/1000) < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 		// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
@@ -202,10 +203,21 @@ const Anilist = ( () => {
 		return n;
 	}
 
+	const getCharacterScore = (data) => {
+		let score = 0;
+		if(data.anime) {
+			data.anime.forEach( (a) => {
+				score+=a.average_score;
+			});
+			score/=data.anime.length;
+		}
+		return score;
+	}
+
 	return {
 		getCharacterData: (id, callback) => {
 			getAnilistToken().then( (data) => {
-				anilistAccessToken = data;
+				if(data) anilistAccessToken = data;
 				anilistCharPage(id).then( (data) => {
 					callback(data);
 				});
@@ -214,7 +226,7 @@ const Anilist = ( () => {
 		},
 		characterSearch: (query, callback) => {
 			getAnilistToken().then( (data) => {
-				anilistAccessToken = data;
+				if(data) anilistAccessToken = data;
 				anilistCharSearch(query).then( (data) => { 
 					callback(data);
 				});
