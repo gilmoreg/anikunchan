@@ -255,7 +255,7 @@ const Anilist = ( () => {
 })();
 
 const searchModal = () => {
-	let html = '<div class="search-box red">' + 
+	let html = '<div class="search-box">' + 
 	'<form id="al-search-form" action="javascript:performSearch()"><input id="al-query" type="text" name="search" placeholder="Type a character name" required>' + 
 	' <button type="submit" ><i class="fa fa-search" aria-hidden="true"></i></button></form></div><div class="al-search-results"</div>';
 	openModal(html);

@@ -81,7 +81,7 @@ ul {
 .summary, .google-image-container, .youtube-video-container {
 	margin-top: 5px;
 	padding: 10px;
-	background-color: lightgrey;
+	background-color: #e6e6e6;
 }
 
 h2 {
@@ -124,7 +124,7 @@ h2 {
 	width: 155px;
 	height: 170px;
 	padding: 10px;
-	background-color: #caaaaa;
+	background-color: #d6e3e6;
 	margin: 5px;
 }
 
@@ -132,7 +132,7 @@ h2 {
 	width: 155px;
 	height: 170px;
 	padding: 10px;
-	background-color: #caaaaa;
+	background-color: #d6e3e6;
 	margin: 5px;
 }
 
