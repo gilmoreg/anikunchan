@@ -178,8 +178,8 @@ const Anilist = ( () => {
 	const getAnilistToken = () => {
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
-		// These tokens expire after 1 hour
-		if((Date.now()/1000) < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
+		// These tokens expire after 1 hour - giving myself 20 seconds leeway
+		if((Date.now()/1000) < (anilistAccessToken.expires-20)) return new Promise( (resolve,reject) => { resolve(); } ); 
 		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
 		return new Promise( (resolve,reject) => {
 			resolve($.post(anilistAuthTokenPost)); 
@@ -187,34 +187,24 @@ const Anilist = ( () => {
 	}
 
 	const anilistCharSearch = (query) => {
-		return new Promise( (resolve,reject) => {
-			resolve( $.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`) );
-		});
+		return Promise.resolve( $.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`) );
 	}
 
-	const recursiveSearch = (query, set) => {
-		getAnilistToken().then( (data) => {
-			if(data) anilistAccessToken = data;
-			anilistCharSearch(query).then( (data) => { 
-				set = set.concat(data);
-				if(data.length>=20) {
-					anilistPage++;
-					recursiveSearch(query, set);
-				}
-				else {
-					return new Promise( (resolve,reject) => { 
-						resolve(set); 
-					});
-				}
-			});
-		})
-		.catch( (msg) => { console.log('err recursiveSearch',msg); }); // This is not working - not catching errors earlier in the chain;
+	const recursiveSearch = (query, set, callback) => {
+		anilistCharSearch(query).then( (data) => { 
+			set = set.concat(data);
+			if(data.length>=20) {
+				anilistPage++;
+				recursiveSearch(query, set, callback);
+			}
+			else {
+				callback(set);
+			}
+		}, (err) => { console.log('recursiveSearch err',err); });
 	}
 
 	const anilistCharPage = (id) => {
-		return new Promise( (resolve,reject) => {
-			resolve( $.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`) );
-		});
+		return Promise.resolve( $.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`) );
 	}
 
 	const name = (data) => {
@@ -242,10 +232,11 @@ const Anilist = ( () => {
 		},
 		characterSearch: (query, callback) => {
 			anilistPage = 1;
-			recursiveSearch(query,[]).then( (data) => {
-				callback(data);
+			getAnilistToken().then( (data) => {
+				if(data) anilistAccessToken = data;
+				recursiveSearch(query,[],callback);
 			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain;	*/
+			.catch( (msg) => { console.log('err queryAnilist',msg); });
 		},
 		render: (data) => {
 			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
@@ -289,7 +280,6 @@ const Search = ( () => {
 		data.forEach( (element) => {
 			html+=buildSearchResult(element);
 		});
-		if(data.length>=20) html+=`<button onclick="more()">more results....</button>`;
 
 		$('.al-search-results').html(html);
 		$('.aniCharSearch').on('click', (event) => {
@@ -322,36 +312,6 @@ const Search = ( () => {
 
 	}
 })();
-
-const renderAdditionalResults = (data) => {
-	$('.search').removeClass('hidden');
-	let html = '';
-	if(data.error) {
-		// TODO this will be ugly
-		$('.al-search-results').append("No more results");
-		return;
-	}
-	data.forEach( (element, index) => {
-		let name = element.name_first;
-		if(element.name_last) name += ' ' + element.name_last;
-		html += 
-		`<div class="col-3 aniCharSearch" id="${element.id}">` +
-			`<div class="ani-search-thumb">` +
-				`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
-			`</div>` +
-			`<div class="ani-search-name">${name}</div>` +
-		`</div>`;
-	});
-	if(data.length>=20) html+=`<button class="more-button" onclick="more()">more results....</button>`;
-	$('.al-search-results').append(html);
-	if(data.length>=20) $('.more-button').removeClass('hidden'); // this might just be a hack
-	// this is going to double events (if I can just get the parent thing working this won't matter and won't have to redo this here)
-	$('.aniCharSearch').on('click', (event) => {
-		event.preventDefault();
-		$('.search').addClass('hidden');
-		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
-	});
-}
 
 const CharacterPage = ( () => {
 	
