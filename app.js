@@ -204,6 +204,13 @@ const Anilist = ( () => {
 		return n;
 	}
 
+	const animeTitle = (data) => {
+		console.log('animeTitle',data);
+		if(data.series_type) return data.title_english || data.title_romaji || data.title_japanese || "";
+		else if(data.anime[0]) return data.anime[0].title_english || data.anime[0].title_romaji || data.anime[0].title_japanese || "";
+		else return "";
+	}
+
 	return {
 		getCharacterData: (id, callback) => {
 			getAnilistToken().then( (data) => {
@@ -234,20 +241,24 @@ const Anilist = ( () => {
 			// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
 			let description = marked(data.info.replace(/~!.*?!~*/g, ''));
 			//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
+			// Stretch goal: show only the first few lines until the user clicks "More"
 			description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
 
 			$('.long-description').html(description);
 			$('.appears-in-list').empty();
-			// Sorting anime by start date helps reduce bad Google results (due to ovas and shorts sometimes coming first)
+			// Sorting anime by start date helps reduce bad Google results (due to OVA/ONAs and shorts sometimes coming first)
 			data.anime.sort( (a,b) => {
 				return a.start_date_fuzzy - b.start_date_fuzzy;
 			});
 			data.anime.forEach((anime) => {
-				$('.appears-in-list').append('<li><a href="https://anilist.co/anime/' + anime.id + '" target="_blank">' + anime.title_english + '</a></li>');
+				$('.appears-in-list').append(`<li><a href="https://anilist.co/anime/${anime.id}" target="_blank">${animeTitle(anime)}</a></li>`);
 			});			
 		},
 		getName: (data) => {
 			return name(data);
+		},
+		getAnime: (data) => {
+			return animeTitle(data);
 		}
 	}
 })();
@@ -328,7 +339,8 @@ const renderAdditionalResults = (data) => {
 
 const createPage = (data) => {
 	Anilist.render(data);
-	const query = Anilist.getName(data) + ' ' + data.anime[0].title_english;
+	const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
+	console.log('createPage',query);
 	YouTube.queryYouTube(query);
 	Google.queryGoogleImages(query);
 	setLinks(Anilist.getName(data));
