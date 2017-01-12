@@ -5,7 +5,8 @@ let state = {
 	searchStrings: [],
 	anilistAccessToken: {},
 	imgurPage: 0,
-	googlePage: 0
+	googlePage: 0,
+	anilistPage: 1
 }
 
 const Google = ( () => {
@@ -172,13 +173,13 @@ const YouTube = ( () => {
 const Anilist = ( () => {
 	const anilistEndPoint = 'https://anilist.co/api/';
 	let anilistAccessToken = state.anilistAccessToken;
+	let anilistPage = state.anilistPage;
 
 	const getAnilistToken = () => {
-		if((Date.now()/1000) < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
-		// These tokens expire after 1 hour, ideally I would store the token and re-use it until it expires, but
-		// time constraints force me to simply fetch a new one with each search for now
+		// These tokens expire after 1 hour
+		if((Date.now()/1000) < anilistAccessToken.expires) return new Promise( (resolve,reject) => { resolve(); } ); 
 		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
 		return new Promise( (resolve,reject) => {
 			resolve($.post(anilistAuthTokenPost)); 
@@ -187,7 +188,7 @@ const Anilist = ( () => {
 
 	const anilistCharSearch = (query) => {
 		return new Promise( (resolve,reject) => {
-			resolve( $.get(`${anilistEndPoint}character/search/${query}?access_token=${anilistAccessToken.access_token}`) );
+			resolve( $.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`) );
 		});
 	}
 
@@ -203,17 +204,6 @@ const Anilist = ( () => {
 		return n;
 	}
 
-	const getCharacterScore = (data) => {
-		let score = 0;
-		if(data.anime) {
-			data.anime.forEach( (a) => {
-				score+=a.average_score;
-			});
-			score/=data.anime.length;
-		}
-		return score;
-	}
-
 	return {
 		getCharacterData: (id, callback) => {
 			getAnilistToken().then( (data) => {
@@ -224,7 +214,9 @@ const Anilist = ( () => {
 			})
 			.catch( (msg) => { console.log('err queryAnilist',msg); }); // This is not working - not catching errors earlier in the chain
 		},
-		characterSearch: (query, callback) => {
+		characterSearch: (query, callback, next) => {
+			if(next) { anilistPage++; } 
+			else { anilistPage=1; }
 			getAnilistToken().then( (data) => {
 				if(data) anilistAccessToken = data;
 				anilistCharSearch(query).then( (data) => { 
@@ -289,7 +281,44 @@ const renderSearch = (data) => {
 			`<div class="ani-search-name">${name}</div>` +
 		`</div>`;
 	});
+	if(data.length>=20) html+=`<button onclick="more()">more results....</button>`;
 	$('.al-search-results').html(html);
+	$('.aniCharSearch').on('click', (event) => {
+		event.preventDefault();
+		$('.search').addClass('hidden');
+		Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), createPage);
+	});
+}
+
+const more = () => {
+	$('.more-button').addClass('hidden');
+	const query = $('#al-query').val();
+	Anilist.characterSearch(query, renderSearch, true);
+}
+
+const renderAdditionalResults = (data) => {
+	$('.search').removeClass('hidden');
+	let html = '';
+	if(data.error) {
+		$('.al-search-results').html("No results");
+		return;
+	}
+	data.forEach( (element, index) => {
+		//const desc = element. //
+		let name = element.name_first;
+		if(element.name_last) name += ' ' + element.name_last;
+		html += 
+		`<div class="col-3 aniCharSearch" id="${element.id}">` +
+			`<div class="ani-search-thumb">` +
+				`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
+			`</div>` +
+			`<div class="ani-search-name">${name}</div>` +
+		`</div>`;
+	});
+	if(data.length>=20) html+=`<button class="more-button" onclick="more()">more results....</button>`;
+	$('.al-search-results').append(html);
+	if(data.length>=20) $('.more-button').removeClass('hidden'); // this might just be a hack
+	// this is going to double events (if I can just get the parent thing working this won't matter and won't have to redo this here)
 	$('.aniCharSearch').on('click', (event) => {
 		event.preventDefault();
 		$('.search').addClass('hidden');
