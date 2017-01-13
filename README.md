@@ -3,7 +3,7 @@
 A Thinkful Front End Web Development Capstone Project
 by [Grayson Gilmore](https://github.com/gilmoreg/).
 
-/* screenshot */
+##screenshot
 
 ##Summary
 Anikunchan enables you to search for your favorite anime characters and then see whatever data is available about them, namely:
