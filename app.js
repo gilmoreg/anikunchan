@@ -282,7 +282,6 @@ const Search = ( () => {
 	   let allPairs = [];
 	   // Tokenize the string and put the tokens/words into an array
 	   let words = str.split('\\s');
-	   // For each word
 	   words.forEach( (w) => {
 			const pairsInWord = letterPairs(w);
 			pairsInWord.forEach( () => {
@@ -300,7 +299,7 @@ const Search = ( () => {
 		
 		pairs1.forEach( (p1) => {
 			pairs2.filter( (p2) => {
-				if(p1===p2) { // probably need an accurate comparison
+				if(p1===p2) {
 					intersection++;
 					return false;
 				}
