@@ -6,7 +6,7 @@ by [Grayson Gilmore](https://github.com/gilmoreg/).
 ##screenshot
 
 ##Summary
-Anikunchan enables you to search for your favorite anime characters and then see whatever data is available about them, namely:
+Anikunchan enables you to search for your favorite anime characters and then see interesting data about them:
 
 * A portrait
 * The character's name, Japanese name and alternate names
