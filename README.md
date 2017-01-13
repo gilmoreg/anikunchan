@@ -7,13 +7,14 @@ by [Grayson Gilmore](https://github.com/gilmoreg/).
 
 ##Summary
 Anikunchan enables you to search for your favorite anime characters and then see whatever data is available about them, namely:
-*A portrait
-*The character's name, Japanese name and alternate names
-*Which anime that character appears in
-*Links which provide additional resources
-*A summary
-*The results of a Google Image search, with the ability to page through additional results
-*A similar display of a YouTube search
+
+* A portrait
+* The character's name, Japanese name and alternate names
+* Which anime that character appears in
+* Links which provide additional resources
+* A summary
+* The results of a Google Image search, with the ability to page through additional results
+* A similar display of a YouTube search
 
 Particular elements will be hidden if no results are available. Search results are sorted by relevance, and may be redisplayed once hidden.
 
