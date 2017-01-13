@@ -71,7 +71,7 @@ body {
 
 .portrait-image img {
 	object-fit: scale-down;
-	width: 255px;
+	width: 100%;
 }
 
 .appears-in, .links {
@@ -174,7 +174,6 @@ h2 {
 /* Might merge these with identical rules above, or they might need individual styling */
 .al-search-results {
 	text-align: center;
-	margin-top: 10px;
 	display: flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
