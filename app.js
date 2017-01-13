@@ -234,8 +234,7 @@ const Anilist = ( () => {
 			getAnilistToken().then( (data) => {
 				if(data) anilistAccessToken = data;
 				recursiveSearch(query,[],callback);
-			})
-			.catch( (msg) => { console.log('err queryAnilist',msg); });
+			}, (msg) => { console.log('err queryAnilist',msg); });
 		},
 		render: (data) => {
 			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
@@ -269,6 +268,48 @@ const Anilist = ( () => {
 })();
 
 const Search = ( () => {
+
+	// Relevance search adapted from http://www.catalysoft.com/articles/StrikeAMatch.html
+	const letterPairs = (str) => {
+	   let pairs = [];
+	   for (var i=0; i<(str.length-1); i++) {
+		   pairs.push(str.substring(i,i+2));
+	   }
+	   return pairs;
+	}
+
+	const wordLetterPairs = (str) =>  {
+	   let allPairs = [];
+	   // Tokenize the string and put the tokens/words into an array
+	   let words = str.split('\\s');
+	   // For each word
+	   words.forEach( (w) => {
+			const pairsInWord = letterPairs(w);
+			pairsInWord.forEach( () => {
+				allPairs.push(w);
+			});
+	   })
+	   return allPairs;
+	}
+
+	const score = (str1, str2) => {
+		let pairs1 = wordLetterPairs(str1.toUpperCase());
+		let pairs2 = wordLetterPairs(str2.toUpperCase());
+		let intersection = 0;
+		let	union = pairs1.length + pairs2.length;
+		
+		pairs1.forEach( (p1) => {
+			pairs2.filter( (p2) => {
+				if(p1===p2) { // probably need an accurate comparison
+					intersection++;
+					return false;
+				}
+				return true;
+			});
+		});
+		return (2.0*intersection)/union;
+	}
+
 	const renderSearch = (data) => {
 		if(data.error) {
 			$('.al-search-results').html("No results");
@@ -276,6 +317,13 @@ const Search = ( () => {
 		}
 		$('.search').removeClass('hidden');
 		let html = '';
+
+		const query = $('#al-query').val();
+
+		data.sort( (a,b) => {
+			return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
+		});
+
 		data.forEach( (element) => {
 			html+=buildSearchResult(element);
 		});
@@ -361,7 +409,6 @@ const search = () => {
 }
 
 const toggleResults = () => {
-	console.log('toggling');
 	$('.search').toggleClass('hidden');
 }
 
