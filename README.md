@@ -20,7 +20,7 @@ Particular elements will be hidden if no results are available. Search results a
 
 ##Technical
 * This site is entirely browser-side, written in HTML, ES6 Javascript, CSS3, and JQuery. 
-* Additionaly, the site uses [Marked](https://github.com/chjj/marked) to render Markdown in the summary section and [Font Awesome](http://fontawesome.io/) for pagination arrows.
+* Additionally, the site uses [Marked](https://github.com/chjj/marked) to render Markdown in the summary section and [Font Awesome](http://fontawesome.io/) for pagination arrows.
 * The main datasource is the [Anilist.co API](https://anilist-api.readthedocs.io/en/latest/). 
   * The Javascript fetches an [access token](https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials) (good for one hour) and then does a recursive search using [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to get every page of results.
   * The results are sorted by relevance according to the [Strike A Match](http://www.catalysoft.com/articles/StrikeAMatch.html) algorithm.
