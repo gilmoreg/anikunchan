@@ -31,7 +31,7 @@ const Google = ( () => {
 		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
 	}
 
-	const cacheItemExists = (q) => {
+	const getCacheItem = (q) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
 		// Filter out expired results
 		cache.filter( (a) => {
@@ -133,7 +133,7 @@ const Google = ( () => {
 		// Entry point - the first Google search for a new character result
 		query: (q) => {
 			displayPage = 0;
-			let item = cacheItemExists(q);
+			let item = getCacheItem(q);
 			if(item) {
 				let start = displayPage*numToShow;
 				let finish = start + numToShow;
