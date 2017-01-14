@@ -4,29 +4,36 @@
 let state = {
 	searchStrings: [],
 	anilistAccessToken: {},
-	imgurPage: 0,
-	googlePage: 0,
 	anilistPage: 1,
 }
 
 const Google = ( () => {
-	let googlePage = state.googlePage;
+	let googlePage = 0;
+	let displayPage 0;
 	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
+	const numToShow = 6;
+	const maxResults = 50;
+	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
 
-	const googleAPICall = (query, callback) => {
+	let cache = [];
+
+	const googleAPICall = (query) => {
 		const gQuery = {
 			q: query,
 			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 			cx: '017818390200612997677:nulntbij5kc',
 			searchType: 'image',
-			num: 6,
+			num: 10, // Upper limit in Google CSE
 			safe: 'medium',
-			start: googlePage*6+1
+			start: googlePage*10+1
 		}
-		$.getJSON(googleEndpoint, gQuery, callback);
+		googlePage++; // TODO is this safe?
+		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
 	}
 
-	const displayGoogleData = (data) => {
+	const displayGoogleData = (item) => {
+		console.log('displayGoogleData',item);
+		/*
 		const numResults = data.queries.request[0].totalResults;
 
 		if(numResults===0) {
@@ -60,8 +67,8 @@ const Google = ( () => {
 			$('#gimages-prev').on('click', (event) => {
 	    		event.preventDefault();
 	    		$('#gimages-prev').off('click');
-	    		googlePage--;
-	    		googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
+	    		//googlePage--;
+	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
     	else {
@@ -69,25 +76,103 @@ const Google = ( () => {
     		$('#gimages-prev').addClass('dim-arrow');
     	}
 
-    	if(googlePage*6 < numResults) {
+    	if(googlePage*numToShow < numResults) {
 			$('#gimages-next').on('click', (event) => {
 	    		event.preventDefault();
 	    		$('#gimages-next').off('click');
-	    		googlePage++;
-	    		googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
+	    		//googlePage++;
+	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
     	else {
     		$('#gimages-next').off('click');
     		$('#gimages-next').addClass('dim-arrow');
     	}
-
+    	*/
 	}
 
+	const cacheItemExists = (q) => {
+		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
+		// Filter out expired results
+		cache.filter( (a) => {
+			if(a.expires < Date.now()) return false;
+			return true;
+		});
+
+		cache.forEach( (a) => {
+			if(a.query === q) return a;
+		});
+		return undefined;
+	}
+
+	const googleSearch = (cacheItem) => {
+		/* 
+			What state are we in here?
+			We need more data, because a) we are under cap; b) our current display has less than numToShow;
+			Sometimes under a) we are prefetching;
+			Either we have no cached result or the one we have is under cap
+		*/
+		if(cacheItem.numAPICalls > maxCalls) return Promise.reject(); // might be off by 1
+
+		googleAPICall(cacheItem.query).then( (data) => {
+			if(data.items) {
+				cacheItem.results.concat(data.items);
+				cacheItem.numAPICalls++;
+				return Promise.resolve(cacheItem);
+			}
+			else {
+				return Promise.reject(); // don't have to interpret this as an error necessarily
+			}
+		};
+	};
+
 	return {
-		queryGoogleImages: (query) => {
-			googleAPICall(query,displayGoogleData);
+		// Entry point - the first Google search for a new character result
+		query: (q) => {
+			googleDisplayPage = 0;
+			// Check if we have this query cached
+			let item = cacheItemExists(q);
+			if(result) {
+				// We have data, but is it ENOUGH?
+				let start = displayPage*numToShow;
+				let finish = start + numToShow;
+				if(finish > item.results.length && finish < maxResults) {
+					// Need more data
+					// call API...callback where though? not here - this is the entry point
+					// maybe a display function that can handle still not having enough?
+					googleSearch(item).then( (i) => { // resolve
+						// i = cacheItem now with (more) results
+						displayGoogleData(i);
+					}, () => { // reject - no results
+						console.log('more attempt - no results');
+					});
+				}
+				else {
+					// ok we have enough data (either finish is less than what we have or we are at cap)
+					// display it (making sure not to go over cap)
+					// load more results if we aren't at the cap
+					displayGoogleData(i);
+				}
+			}
+			else {
+				// No cached result - call API from scratch
+				item = {
+					query: q,
+					expire: Date.now()+1.08e7, // 3 hours in milliseconds
+					numAPICalls: 0,
+					results: []
+				};
+				cache.push(item);
+				googleSearch(item).then( (i) => { // resolve
+					// i = cacheItem now with results
+					displayGoogleData(i);
+				}, () => { // reject - no results
+					console.log('scratch attempt - no results');
+				});
+
+			}
 		}
+		// More public functions
 	}
 })();
 
@@ -181,9 +266,7 @@ const Anilist = ( () => {
 		// These tokens expire after 1 hour - giving myself 20 seconds leeway
 		if((Date.now()/1000) < (anilistAccessToken.expires-20)) return new Promise( (resolve,reject) => { resolve(); } ); 
 		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-		return new Promise( (resolve,reject) => {
-			resolve($.post(anilistAuthTokenPost)); 
-		});
+		return Promise.resolve( $.post(anilistAuthTokenPost) ); 
 	}
 
 	const anilistCharSearch = (query) => {
@@ -198,6 +281,10 @@ const Anilist = ( () => {
 				recursiveSearch(query, set, callback);
 			}
 			else {
+				set.filter( (i) => {
+					if(data.name_first) return true;
+					else return false;
+				});
 				callback(set);
 			}
 		}, (err) => { console.log('recursiveSearch err',err); });
@@ -314,7 +401,7 @@ const Search = ( () => {
 			$('.al-search-results').html("No results");
 			return;
 		}
-		toggleResults();
+		showResults();
 		let html = '';
 
 		const query = $('#al-query').val().trim();
@@ -411,6 +498,11 @@ const toggleResults = () => {
 	// TODO if there are no search results, don't do anything
 	$('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
 	$('.search').stop().slideToggle();
+}
+
+const showResults = () => {
+	$('.fa-chevron-down').removeClass('js-chevron-down-closestate');
+	$('.search').stop().show();
 }
 
 const closeModal = () => {
