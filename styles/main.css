@@ -1,6 +1,6 @@
 * {
   box-sizing: border-box;
-	font-family: Roboto;
+	font-family: 'Open Sans';
 }
 
 nav {
@@ -13,9 +13,11 @@ nav .header {
 }
 
 nav .logo {
-	font-style: italic;
+	font-family: 'Carter One';
+	text-align: center;
 	height: 100%;
 	color: #00c2ff;
+	padding-top: 5px;
 }
 
 nav h1 {
@@ -25,6 +27,8 @@ nav h1 {
 
 nav .search-box {
 	text-align: center;
+	padding-top: 5px;
+	padding-bottom: 5px;
 }
 
 nav .search-button {
