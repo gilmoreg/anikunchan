@@ -4,7 +4,8 @@
 }
 
 nav {
-	background-color: rgba(12,13,14,0.86);
+	background: linear-gradient(to bottom, rgba(125,126,125,1) 0%,rgba(14,14,14,1) 100%);
+	/*background-color: rgba(12,13,14,0.86);*/
 	padding: 5px;
 	font-size: 22px;
 }
@@ -182,14 +183,15 @@ h2 {
 	display: flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
-	background-color: #355a6f;
+	/*background-color: #355a6f;*/
+	background: linear-gradient(to bottom, rgba(167,207,223,1) 0%,rgba(35,83,138,1) 100%);
 }
 
 .aniCharSearch {
 	width: 155px;
 	height: 200px;
 	padding: 10px;
-	background-color: #d6e3e6;
+	background-color: white;
 	margin: 5px;
 }
 

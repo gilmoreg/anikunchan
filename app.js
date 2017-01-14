@@ -17,17 +17,16 @@ const Google = ( () => {
 
 	let cache = [];
 
-	const googleAPICall = (query) => {
+	const googleAPICall = (item) => {
 		const gQuery = {
-			q: query,
+			q: item.query,
 			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 			cx: '017818390200612997677:nulntbij5kc',
 			searchType: 'image',
 			num: 10, // Upper limit in Google CSE
 			safe: 'medium',
-			start: googlePage*10+1
+			start: item.numAPICalls*10+1
 		}
-		googlePage++; // TODO is this safe?
 		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
 	}
 
@@ -52,7 +51,7 @@ const Google = ( () => {
 			callback();
 			return;
 		}
-		googleAPICall(cacheItem.query).then( (data) => {
+		googleAPICall(cacheItem).then( (data) => {
 			if(data.items) {
 				cacheItem.results = cacheItem.results.concat(data.items);
 				cacheItem.numAPICalls++;
