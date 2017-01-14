@@ -28,68 +28,7 @@ const Google = ( () => {
 			start: googlePage*10+1
 		}
 		googlePage++; // TODO is this safe?
-		//debugger;
 		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
-	}
-
-	const displayGoogleData = (item) => {
-		console.log('displayGoogleData',item);
-		/*
-		const numResults = data.queries.request[0].totalResults;
-
-		if(numResults===0) {
-			$('.google-image-container').addClass('hidden');
-			return;
-		}
-		$('.google-image-container').removeClass('hidden');
-		
-		let html = '';
-    	data.items.forEach( (element, index) => {
-    		if(element.image) {
-    			html += `<div class="gimage" link="${element.link}" contextLink="${element.image.contextLink}"><img src="${element.image.thumbnailLink}" alt="${element.snippet}"></div>`;
-    		}
-    	});
-
-    	// HTML
-    	$('.googleimages').html(html);
-
-    	// Event handlers
-    	$('.googleimages').on('click','.gimage', (event) => {
-    		const src = $(event.target).closest('.gimage').attr('link');
-    		const link = $(event.target).closest('.gimage').attr('contextLink');
-    		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
-    		CharacterPage.openModal(html);
-    	});
-    	
-    	// Pagination
-    	$('#gimages-prev, #gimages-next').off('click').removeClass('dim-arrow');
-
-    	if(googlePage>0) {
-			$('#gimages-prev').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#gimages-prev').off('click');
-	    		//googlePage--;
-	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
-	    	});
-    	}
-    	else {
-    		$('#gimages-prev').off('click');
-    		$('#gimages-prev').addClass('dim-arrow');
-    	}
-
-    	if(googlePage*numToShow < numResults) {
-			$('#gimages-next').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#gimages-next').off('click');
-	    		//googlePage++;
-	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
-	    	});
-    	}
-    	else {
-    		$('#gimages-next').off('click');
-    		$('#gimages-next').addClass('dim-arrow');
-    	}
-    	*/
 	}
 
 	const cacheItemExists = (q) => {
@@ -132,6 +71,68 @@ const Google = ( () => {
 			}
 		});
 	};
+
+	const displayGoogleData = (item) => {
+		console.log('displayGoogleData',item);
+
+		if(item===undefined || item.results.length===0) {
+			$('.google-image-container').addClass('hidden');
+			return;
+		}
+
+		$('.google-image-container').removeClass('hidden');
+
+		let html = '';
+		const start = displayPage*numToShow; // could do this math on the fly, but this is more readable
+		const end = start + numToShow;
+    	for(let i=start;i<end;i++) {
+    		const e = item.results[i];
+    		if(e.image) {
+    			html += `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`;
+    		}
+    	}
+
+    	// HTML
+    	$('.googleimages').html(html);
+/*
+    	// Event handlers
+    	$('.googleimages').on('click','.gimage', (event) => {
+    		const src = $(event.target).closest('.gimage').attr('link');
+    		const link = $(event.target).closest('.gimage').attr('contextLink');
+    		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
+    		CharacterPage.openModal(html);
+    	});
+    	
+    	// Pagination
+    	$('#gimages-prev, #gimages-next').off('click').removeClass('dim-arrow');
+
+    	if(googlePage>0) {
+			$('#gimages-prev').on('click', (event) => {
+	    		event.preventDefault();
+	    		$('#gimages-prev').off('click');
+	    		//googlePage--;
+	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
+	    	});
+    	}
+    	else {
+    		$('#gimages-prev').off('click');
+    		$('#gimages-prev').addClass('dim-arrow');
+    	}
+
+    	if(googlePage*numToShow < numResults) {
+			$('#gimages-next').on('click', (event) => {
+	    		event.preventDefault();
+	    		$('#gimages-next').off('click');
+	    		//googlePage++;
+	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
+	    	});
+    	}
+    	else {
+    		$('#gimages-next').off('click');
+    		$('#gimages-next').addClass('dim-arrow');
+    	}
+    	*/
+	}
 
 	return {
 		// Entry point - the first Google search for a new character result
