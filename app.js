@@ -9,7 +9,7 @@ let state = {
 
 const Google = ( () => {
 	let googlePage = 0;
-	let displayPage 0;
+	let displayPage = 0;
 	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
 	const numToShow = 6;
 	const maxResults = 50;
@@ -28,6 +28,7 @@ const Google = ( () => {
 			start: googlePage*10+1
 		}
 		googlePage++; // TODO is this safe?
+		//debugger;
 		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
 	}
 
@@ -99,40 +100,46 @@ const Google = ( () => {
 			return true;
 		});
 
-		cache.forEach( (a) => {
-			if(a.query === q) return a;
-		});
+		for(let i=0;i<cache.length;i++) {
+			if(cache[i].query === q) {
+				return cache[i];
+			}
+		}
 		return undefined;
 	}
 
-	const googleSearch = (cacheItem) => {
+	const googleSearch = (cacheItem, callback) => {
 		/* 
 			What state are we in here?
 			We need more data, because a) we are under cap; b) our current display has less than numToShow;
 			Sometimes under a) we are prefetching;
 			Either we have no cached result or the one we have is under cap
 		*/
-		if(cacheItem.numAPICalls > maxCalls) return Promise.reject(); // might be off by 1
-
+		if(cacheItem.numAPICalls > maxCalls) { // might be off by 1
+			callback(); // so displayGoogleData will have to handle an empty object result
+			// callback might also point nowhere if we are just fetching
+			return;
+		}
 		googleAPICall(cacheItem.query).then( (data) => {
 			if(data.items) {
-				cacheItem.results.concat(data.items);
+				cacheItem.results = cacheItem.results.concat(data.items);
 				cacheItem.numAPICalls++;
-				return Promise.resolve(cacheItem);
+				callback(cacheItem);
 			}
 			else {
-				return Promise.reject(); // don't have to interpret this as an error necessarily
+				callback(); // so displayGoogleData will have to handle an empty object result
+				// callback might also point nowhere if we are just fetching
 			}
-		};
+		});
 	};
 
 	return {
 		// Entry point - the first Google search for a new character result
 		query: (q) => {
-			googleDisplayPage = 0;
+			displayPage = 0;
 			// Check if we have this query cached
 			let item = cacheItemExists(q);
-			if(result) {
+			if(item) {
 				// We have data, but is it ENOUGH?
 				let start = displayPage*numToShow;
 				let finish = start + numToShow;
@@ -140,7 +147,7 @@ const Google = ( () => {
 					// Need more data
 					// call API...callback where though? not here - this is the entry point
 					// maybe a display function that can handle still not having enough?
-					googleSearch(item).then( (i) => { // resolve
+					googleSearch(item, displayGoogleData).then( (i) => { // resolve
 						// i = cacheItem now with (more) results
 						displayGoogleData(i);
 					}, () => { // reject - no results
@@ -151,7 +158,7 @@ const Google = ( () => {
 					// ok we have enough data (either finish is less than what we have or we are at cap)
 					// display it (making sure not to go over cap)
 					// load more results if we aren't at the cap
-					displayGoogleData(i);
+					displayGoogleData(item);
 				}
 			}
 			else {
@@ -163,13 +170,7 @@ const Google = ( () => {
 					results: []
 				};
 				cache.push(item);
-				googleSearch(item).then( (i) => { // resolve
-					// i = cacheItem now with results
-					displayGoogleData(i);
-				}, () => { // reject - no results
-					console.log('scratch attempt - no results');
-				});
-
+				googleSearch(item, displayGoogleData); // WHY WONT PROMISES WORK HERE? THEY FULFILL BEFORE THE API CALL EVEN HAPPENS
 			}
 		}
 		// More public functions
@@ -471,7 +472,7 @@ const CharacterPage = ( () => {
 			Anilist.render(data);
 			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
 			YouTube.queryYouTube(query);
-			Google.queryGoogleImages(query);
+			Google.query(query);
 			setLinks(Anilist.getName(data));
 			$('.background').removeClass('hidden');
 		},
