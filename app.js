@@ -121,6 +121,7 @@ const Google = ( () => {
 	    		$('#gimages-next').off('click');
 	    		displayPage++;
 	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
+	    		// assuming a fetch would happen here - but also this cannot actually happen until I am SURE there is enough data
 	    	});
     	}
     	else {
