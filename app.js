@@ -267,14 +267,14 @@ const Anilist = ( () => {
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
 			set = set.concat(data);
-			if(data.length>=20) {
+			if(data.length>20) {
 				anilistPage++;
 				recursiveSearch(query, set, callback);
 			}
 			else {
 				set.filter( (i) => {
-					if(data.name_first) return true;
-					else return false;
+					if(i.name_first) return true;
+					return false;
 				});
 				callback(set);
 			}
@@ -370,6 +370,9 @@ const Search = ( () => {
 	}
 
 	const score = (str1, str2) => {
+		if(typeof str1 !== 'string' || typeof str2 !== 'string') {
+			return 0;
+		}
 		let pairs1 = wordLetterPairs(str1.toUpperCase());
 		let pairs2 = wordLetterPairs(str2.toUpperCase());
 		let intersection = 0;
@@ -396,6 +399,11 @@ const Search = ( () => {
 		let html = '';
 
 		const query = $('#al-query').val().trim();
+
+		data.filter( (a) => {
+			if(a.name_first) return true;
+			else return false;
+		});
 
 		data.sort( (a,b) => {
 			return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
