@@ -48,15 +48,8 @@ const Google = ( () => {
 	}
 
 	const googleSearch = (cacheItem, callback) => {
-		/* 
-			What state are we in here?
-			We need more data, because a) we are under cap; b) our current display has less than numToShow;
-			Sometimes under a) we are prefetching;
-			Either we have no cached result or the one we have is under cap
-		*/
-		if(cacheItem.numAPICalls > maxCalls) { // might be off by 1
-			callback(); // so displayGoogleData will have to handle an empty object result
-			// callback might also point nowhere if we are just fetching
+		if(cacheItem.numAPICalls > maxCalls) { 
+			callback();
 			return;
 		}
 		googleAPICall(cacheItem.query).then( (data) => {
@@ -66,8 +59,7 @@ const Google = ( () => {
 				callback(cacheItem);
 			}
 			else {
-				callback(); // so displayGoogleData will have to handle an empty object result
-				// callback might also point nowhere if we are just fetching
+				callback();
 			}
 		});
 	};
@@ -83,8 +75,12 @@ const Google = ( () => {
 		$('.google-image-container').removeClass('hidden');
 
 		let html = '';
-		const start = displayPage*numToShow; // could do this math on the fly, but this is more readable
-		const end = start + numToShow;
+		// could do this math on the fly, but this is more readable
+		// pagination code should make sure that 'start' is never beyond the available results
+		// so we don't scroll into an empty div
+		const start = displayPage*numToShow; 
+		const end = Math.min((start + numToShow),(item.results.length-1));
+
     	for(let i=start;i<end;i++) {
     		const e = item.results[i];
     		if(e.image) {
@@ -94,7 +90,7 @@ const Google = ( () => {
 
     	// HTML
     	$('.googleimages').html(html);
-/*
+
     	// Event handlers
     	$('.googleimages').on('click','.gimage', (event) => {
     		const src = $(event.target).closest('.gimage').attr('link');
@@ -102,15 +98,15 @@ const Google = ( () => {
     		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
     		CharacterPage.openModal(html);
     	});
-    	
+ 	
     	// Pagination
     	$('#gimages-prev, #gimages-next').off('click').removeClass('dim-arrow');
 
-    	if(googlePage>0) {
+    	if(displayPage>0) {
 			$('#gimages-prev').on('click', (event) => {
 	    		event.preventDefault();
 	    		$('#gimages-prev').off('click');
-	    		//googlePage--;
+	    		displayPage--;
 	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
@@ -119,11 +115,11 @@ const Google = ( () => {
     		$('#gimages-prev').addClass('dim-arrow');
     	}
 
-    	if(googlePage*numToShow < numResults) {
+    	if(end < item.results.length) {
 			$('#gimages-next').on('click', (event) => {
 	    		event.preventDefault();
 	    		$('#gimages-next').off('click');
-	    		//googlePage++;
+	    		displayPage++;
 	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
 	    	});
     	}
@@ -131,34 +127,25 @@ const Google = ( () => {
     		$('#gimages-next').off('click');
     		$('#gimages-next').addClass('dim-arrow');
     	}
-    	*/
 	}
 
 	return {
 		// Entry point - the first Google search for a new character result
 		query: (q) => {
 			displayPage = 0;
-			// Check if we have this query cached
 			let item = cacheItemExists(q);
 			if(item) {
-				// We have data, but is it ENOUGH?
 				let start = displayPage*numToShow;
 				let finish = start + numToShow;
 				if(finish > item.results.length && finish < maxResults) {
-					// Need more data
-					// call API...callback where though? not here - this is the entry point
-					// maybe a display function that can handle still not having enough?
 					googleSearch(item, displayGoogleData).then( (i) => { // resolve
-						// i = cacheItem now with (more) results
 						displayGoogleData(i);
-					}, () => { // reject - no results
+					})
+					.catch( (msg) => {
 						console.log('more attempt - no results');
 					});
 				}
 				else {
-					// ok we have enough data (either finish is less than what we have or we are at cap)
-					// display it (making sure not to go over cap)
-					// load more results if we aren't at the cap
 					displayGoogleData(item);
 				}
 			}
@@ -172,6 +159,8 @@ const Google = ( () => {
 				};
 				cache.push(item);
 				googleSearch(item, displayGoogleData); // WHY WONT PROMISES WORK HERE? THEY FULFILL BEFORE THE API CALL EVEN HAPPENS
+				// Prefetch some more results
+				googleSearch(item, $.noop);
 			}
 		}
 		// More public functions
