@@ -6,7 +6,7 @@ let state = {
 	anilistAccessToken: {},
 	imgurPage: 0,
 	googlePage: 0,
-	anilistPage: 1
+	anilistPage: 1,
 }
 
 const Google = ( () => {
@@ -314,10 +314,10 @@ const Search = ( () => {
 			$('.al-search-results').html("No results");
 			return;
 		}
-		$('.search').removeClass('hidden');
+		toggleResults();
 		let html = '';
 
-		const query = $('#al-query').val();
+		const query = $('#al-query').val().trim();
 
 		data.sort( (a,b) => {
 			return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
@@ -330,7 +330,7 @@ const Search = ( () => {
 		$('.al-search-results').html(html);
 		$('.aniCharSearch').on('click', (event) => {
 			event.preventDefault();
-			$('.search').addClass('hidden');
+			toggleResults();
 			Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
 		});
 	}
@@ -352,7 +352,7 @@ const Search = ( () => {
 			$('#al-query').focus();
 		},
 		performSearch: () => {
-			const query = $('#al-query').val();
+			const query = $('#al-query').val().trim();
 			Anilist.characterSearch(query, renderSearch);
 		},
 
@@ -408,7 +408,9 @@ const search = () => {
 }
 
 const toggleResults = () => {
-	$('.search').toggleClass('hidden');
+	// TODO if there are no search results, don't do anything
+	$('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
+	$('.search').stop().slideToggle();
 }
 
 const closeModal = () => {

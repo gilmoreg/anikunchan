@@ -70,7 +70,6 @@ body {
 }
 
 .portrait-image img {
-	object-fit: scale-down;
 	width: 100%;
 }
 
@@ -201,6 +200,24 @@ h2 {
 .aniCharSearch:hover {
 	background-color: #fff8cc;
 }
+
+.toggle-results:hover .fa-chevron-down {
+	color: #fff8cc;
+	cursor: pointer;
+}
+
+.fa-chevron-down {
+	transition: all .3s;
+}
+
+.js-chevron-down-openstate {
+	transform: rotate(180deg);
+}
+
+.js-chevron-down-closestate {
+	transform: rotate(-180deg);	
+}
+
 
 .red {
   outline: 1px solid red;
