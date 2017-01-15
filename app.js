@@ -8,15 +8,10 @@ let state = {
 }
 
 const Google = ( () => {
-	let googlePage = 0;
-	let displayPage = 0;
-	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
-	const numToShow = 6;
-	const maxResults = 20;
+	const imagesEndpoint = 'https://www.googleapis.com/customsearch/v1';
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
-	let slicked = false;
 
-	let cache = [];
+	let imageCache = [];
 
 	const googleAPICall = (item) => {
 		return new Promise( (resolve, reject) => {
@@ -30,7 +25,7 @@ const Google = ( () => {
 				start: item.numAPICalls*10+1
 			}
 			item.numAPICalls++;
-			$.getJSON(googleEndpoint, gQuery)
+			$.getJSON(imagesEndpoint, gQuery)
 			.done( (data) => {
 				resolve(data);
 			})
@@ -72,7 +67,7 @@ const Google = ( () => {
 				`</div>`;
 	}
 
-	const getCacheItem = (q) => {
+	const getCacheItem = (q, cache) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
 		// Filter out expired results
 		cache = cache.filter( (a) => {
@@ -158,22 +153,10 @@ const Google = ( () => {
 	return {
 		// Entry point - the first Google search for a new character result
 		query: (q) => {
-			console.log('google search',q);
-			displayPage = 0;
-			let item = getCacheItem(q);
+			// If we have this item cached, return that
+			let item = getCacheItem(q, imageCache); // TODO
 			if(item) {
-				let start = displayPage*numToShow;
-				let finish = start + numToShow;
-				if(finish > item.results.length && finish < maxResults) {
-					googleSearch(item, 'cache').then( (i) => { 
-						displayGoogleData(i);
-					}), (msg) => {
-						console.log('more attempt - no results');
-					};
-				}
-				else {
-					displayGoogleData(item);
-				}
+				displayGoogleData(item);
 			}
 			else {
 				// No cached result - call API from scratch
@@ -183,13 +166,12 @@ const Google = ( () => {
 					numAPICalls: 0,
 					results: []
 				};
-				cache.push(item);
+				imageCache.push(item);
 				googleSearch(item, 'cache').then( (i) => {
 					displayGoogleData(i);
 				}), (msg) => { console.log('nocache reject',msg); };
 			}
 		}
-		// More public functions
 	}
 })();
 
