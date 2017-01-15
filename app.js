@@ -494,7 +494,6 @@ const search = () => {
 }
 
 const toggleResults = () => {
-	// TODO if there are no search results, don't do anything
 	$('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
 	$('.search').stop().slideToggle();
 }
