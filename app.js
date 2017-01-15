@@ -12,25 +12,60 @@ const Google = ( () => {
 	let displayPage = 0;
 	const googleEndpoint = 'https://www.googleapis.com/customsearch/v1';
 	const numToShow = 6;
-	const maxResults = 50;
+	const maxResults = 20;
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
 	let slicked = false;
 
 	let cache = [];
 
 	const googleAPICall = (item) => {
-		const gQuery = {
-			q: item.query,
-			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-			cx: '017818390200612997677:nulntbij5kc',
-			searchType: 'image',
-			num: 10, // Upper limit in Google CSE
-			safe: 'medium',
-			start: item.numAPICalls*10+1
-		}
-		item.numAPICalls++;
-		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
+		return new Promise( (resolve, reject) => {
+			const gQuery = {
+				q: item.query,
+				key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+				cx: '017818390200612997677:nulntbij5kc',
+				searchType: 'image',
+				num: 10, // Upper limit in Google CSE
+				safe: 'medium',
+				start: item.numAPICalls*10+1
+			}
+			item.numAPICalls++;
+			$.getJSON(googleEndpoint, gQuery)
+			.done( (data) => {
+				resolve(data);
+			})
+			.fail( (msg) => {
+				reject(msg);
+			});
+		});
 	}
+
+	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
+	const googleSearch = (cacheItem, returnType) => {
+		if(cacheItem.numAPICalls > maxCalls) { 
+			return new Promise( (resolve, reject) => {
+				reject('maxcalls exceeded');
+			});
+		}
+
+		return new Promise( (resolve, reject) => {
+			console.log('googleSearch',cacheItem);
+			googleAPICall(cacheItem).then( (data) => {
+				console.log('googleSearch here we go',data);
+				if(data.items) {
+					cacheItem.results = cacheItem.results.concat(data.items);
+					if(returnType === 'cache') resolve(cacheItem);
+					else resolve(data);
+				}
+				else {
+					reject(data);
+				}
+			})
+			.catch( (msg) => {
+				console.log('googlesearch reject',msg);
+			});
+		});
+	};
 
 	const getCacheItem = (q) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
@@ -48,34 +83,8 @@ const Google = ( () => {
 		return undefined;
 	}
 
-	const googleSearch = (cacheItem, callback) => {
-		if(cacheItem.numAPICalls > maxCalls) { 
-			callback();
-			return;
-		}
-		googleAPICall(cacheItem).then( (data) => {
-			if(data.items) {
-				cacheItem.results = cacheItem.results.concat(data.items);
-				callback(cacheItem);
-			}
-			else {
-				callback();
-			}
-		});
-	};
-
-	const displayGoogleData = (item) => {
-		console.log('displayGoogleData',item);
-
-		if(item===undefined || item.results.length===0) {
-			$('.google-image-container').addClass('hidden');
-			return;
-		}
-
-		$('.google-image-container').removeClass('hidden');
-
-    	// Slick
-    	if($('.google-slick').hasClass('slick-initialized')) $('.google-slick').slick('unslick');
+	const gslick = (item) => {
+		if($('.google-slick').hasClass('slick-initialized')) $('.google-slick').slick('unslick');
 
     	let html = '';
     	item.results.forEach( (e) => {
@@ -86,48 +95,58 @@ const Google = ( () => {
 		$('.google-slick').html(html);
 
 		$('.google-slick').not('.slick-initialized').slick({
-			//lazyLoad: 'ondemand',
 			slidesToShow: 4,
 			slidesToScroll: 4,
-			//rows: 2,
-			//slidesPerRow: 4,
 			dots: true,
 			infinite: false
 		});
 
-		//$('.google-slick').slick('removeSlide', null, null, true);
-
-		/*item.results.forEach( (e) => {
-			if(e.image) {
-    			$('.google-slick').slick('slickAdd',`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`);
-    		}
-		});*/
-		//$('.google-slick').slick('reinit');
-
 		// On before slide change
-		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide){
-		  console.log(nextSlide);
-		  // so if nextSlide>numSlides get some more results
-		  // or maybe get more results if we are on penultimate, even - or both!
-		  // Depending on how solid the limit on API calls functions this should work
+		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
+			// Attempt to fetch more results
+			console.log('change',currentSlide,item);
+			googleSearch(item, '').then( (data) => {
+				let items = data.items || data.results;
+				if(items) {
+					items.forEach( (e) => {
+						if(e.image) {
+							$('.google-slick').slick('slickAdd',`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`);
+						}
+					});
+				}			
+			})
+			.catch( (msg) => {
+				console.log('slickevent reject',msg);
+			});
 		});
+	}
+
+	const displayGoogleData = (item) => {
+		console.log('displayGoogleData',item);
+
+		if(item===undefined || item.results.length===0) {
+			$('.google-image-container').addClass('hidden');
+			return;
+		}
+		$('.google-image-container').removeClass('hidden');
+    	gslick(item);
 	}
 
 	return {
 		// Entry point - the first Google search for a new character result
 		query: (q) => {
+			console.log('google search',q);
 			displayPage = 0;
 			let item = getCacheItem(q);
 			if(item) {
 				let start = displayPage*numToShow;
 				let finish = start + numToShow;
 				if(finish > item.results.length && finish < maxResults) {
-					googleSearch(item, displayGoogleData).then( (i) => { // resolve
+					googleSearch(item, 'cache').then( (i) => { 
 						displayGoogleData(i);
-					})
-					.catch( (msg) => {
+					}), (msg) => {
 						console.log('more attempt - no results');
-					});
+					};
 				}
 				else {
 					displayGoogleData(item);
@@ -142,9 +161,9 @@ const Google = ( () => {
 					results: []
 				};
 				cache.push(item);
-				googleSearch(item, displayGoogleData); // WHY WONT PROMISES WORK HERE? THEY FULFILL BEFORE THE API CALL EVEN HAPPENS
-				// Prefetch some more results
-				googleSearch(item, $.noop);
+				googleSearch(item, 'cache').then( (i) => {
+					displayGoogleData(i);
+				}), (msg) => { console.log('nocache reject',msg); };
 			}
 		}
 		// More public functions
