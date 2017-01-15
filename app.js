@@ -107,10 +107,9 @@ const Google = ( () => {
 			responsive: [
 				{
 					breakpoint: 1024,
-						settings: {
+					settings: {
 						slidesToShow: 3,
 						slidesToScroll: 3,
-						infinite: true,
 						dots: true
 					}
 				},
@@ -534,8 +533,6 @@ const hideSpinner = () => {
 }
 
 $(document).ready(function() {
-	$.featherlight.defaults.loading = '<div class="spinner"></div>';
 	$.featherlight.defaults.closeOnClick = 'anywhere';
-
 	$('#al-query').focus();
 });
