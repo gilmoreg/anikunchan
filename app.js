@@ -103,7 +103,26 @@ const Google = ( () => {
 			slidesToShow: 4,
 			slidesToScroll: 4,
 			dots: true,
-			infinite: false
+			infinite: false,
+			responsive: [
+				{
+					breakpoint: 1024,
+						settings: {
+						slidesToShow: 3,
+						slidesToScroll: 3,
+						infinite: true,
+						dots: true
+					}
+				},
+				{
+					breakpoint: 600,
+					settings: {
+						slidesToShow: 2,
+						slidesToScroll: 2,
+						dots: false
+					}
+			 	}
+			]
 		});
 
 		// On before slide change
@@ -516,5 +535,7 @@ const hideSpinner = () => {
 
 $(document).ready(function() {
 	$.featherlight.defaults.loading = '<div class="spinner"></div>';
+	$.featherlight.defaults.closeOnClick = 'anywhere';
+
 	$('#al-query').focus();
 });
