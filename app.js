@@ -407,7 +407,7 @@ const Search = ( () => {
 			$('.al-search-results').html("No results");
 			return;
 		}
-		$('.search-button').html(`<i class="fa fa-search" aria-hidden="true"></i>`);
+		hideSpinner();
 		showResults();
 		let html = '';
 
@@ -484,7 +484,7 @@ const CharacterPage = ( () => {
 			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
 			YouTube.queryYouTube(query);
 			Google.query(query);
-			setLinks(Anilist.getName(data));
+			setLinks(query);
 			$('.background').removeClass('hidden');
 		},
 		openModal: (content) => {
@@ -503,7 +503,7 @@ const CharacterPage = ( () => {
 
 const search = () => {
 	showResults();
-	$('.search-button').html('<div class="spinner"></div>');
+	showSpinner();
 	Search.performSearch();
 	$('#al-query').blur();
 }
@@ -516,6 +516,14 @@ const toggleResults = () => {
 const showResults = () => {
 	$('.fa-chevron-down').removeClass('js-chevron-down-closestate');
 	$('.search').stop().show();
+}
+
+const showSpinner = () => {
+	$('.search-button').html('<div class="spinner"></div>');
+}
+
+const hideSpinner = () => {
+	$('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
 }
 
 const closeModal = () => {
