@@ -14,6 +14,7 @@ const Google = ( () => {
 	const numToShow = 6;
 	const maxResults = 50;
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
+	let slicked = false;
 
 	let cache = [];
 
@@ -27,6 +28,7 @@ const Google = ( () => {
 			safe: 'medium',
 			start: item.numAPICalls*10+1
 		}
+		item.numAPICalls++;
 		return Promise.resolve($.getJSON(googleEndpoint, gQuery));
 	}
 
@@ -54,7 +56,6 @@ const Google = ( () => {
 		googleAPICall(cacheItem).then( (data) => {
 			if(data.items) {
 				cacheItem.results = cacheItem.results.concat(data.items);
-				cacheItem.numAPICalls++;
 				callback(cacheItem);
 			}
 			else {
@@ -73,81 +74,43 @@ const Google = ( () => {
 
 		$('.google-image-container').removeClass('hidden');
 
-		let html = '';
-		item.results.forEach( (e) => {
-			if(e.image) {
-    			html += `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`;
-    		}
-		});
-
-    	// HTML
-    	$('.google-slick').html(html);
-
     	// Slick
-		$('.google-slick').slick({
+    	if($('.google-slick').hasClass('slick-initialized')) $('.google-slick').slick('unslick');
+
+    	let html = '';
+    	item.results.forEach( (e) => {
+			if(e.image) {
+				html+=`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`;
+			}
+		});
+		$('.google-slick').html(html);
+
+		$('.google-slick').not('.slick-initialized').slick({
 			//lazyLoad: 'ondemand',
 			slidesToShow: 4,
 			slidesToScroll: 4,
+			//rows: 2,
+			//slidesPerRow: 4,
 			dots: true,
-			infinite: false,
-			responsive: [
-				{
-				  breakpoint: 1024,
-				  settings: {
-					slidesToShow: 3,
-					slidesToScroll: 3,
-					infinite: true,
-					dots: true
-				  }
-				},
-				{
-				  breakpoint: 600,
-				  settings: {
-					slidesToShow: 2,
-					slidesToScroll: 2
-				  }
-				}
-			]
+			infinite: false
 		});
-    	/*
 
-    	// Event handlers
-    	$('.googleimages').on('click','.gimage', (event) => {
-    		const src = $(event.target).closest('.gimage').attr('link');
-    		const link = $(event.target).closest('.gimage').attr('contextLink');
-    		let html = `<a href="${link}" target="_blank"><img src="${src}" class="google-image"></a>`;
-    		CharacterPage.openModal(html);
-    	});
- 	
-    	// Pagination
-    	$('#gimages-prev, #gimages-next').off('click').removeClass('dim-arrow');
+		//$('.google-slick').slick('removeSlide', null, null, true);
 
-    	if(displayPage>0) {
-			$('#gimages-prev').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#gimages-prev').off('click');
-	    		displayPage--;
-	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
-	    	});
-    	}
-    	else {
-    		$('#gimages-prev').off('click');
-    		$('#gimages-prev').addClass('dim-arrow');
-    	}
+		/*item.results.forEach( (e) => {
+			if(e.image) {
+    			$('.google-slick').slick('slickAdd',`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`);
+    		}
+		});*/
+		//$('.google-slick').slick('reinit');
 
-    	if(end < item.results.length) {
-			$('#gimages-next').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#gimages-next').off('click');
-	    		displayPage++;
-	    		//googleAPICall(data.queries.request[0].searchTerms,displayGoogleData);
-	    		// assuming a fetch would happen here - but also this cannot actually happen until I am SURE there is enough data
-	    	});
-    	}
-    	else {
-    		$('#gimages-next').off('click');
-    		$('#gimages-next').addClass('dim-arrow');
-    	}*/
+		// On before slide change
+		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide){
+		  console.log(nextSlide);
+		  // so if nextSlide>numSlides get some more results
+		  // or maybe get more results if we are on penultimate, even - or both!
+		  // Depending on how solid the limit on API calls functions this should work
+		});
 	}
 
 	return {
@@ -215,7 +178,6 @@ const YouTube = ( () => {
     	data.items.forEach( (element, index) => {
     		if(element.id.videoId) {
     			const snippet = element.snippet;
-    			// QUESTION: is using id like this a good idea? (puts the Youtube video ID in the html to be retreived by javascript, i.e. storing data in the DOM)
     			let title = snippet.title;
     			if(title.length > 50) title = title.substring(0,50) + '...';
     			html += `<div class="ytvid" id="${element.id.videoId}"><div class="yt-thumb"><img src="${snippet.thumbnails.default.url}" alt="${title}"></div><div class="yt-desc">${title}</div></div>`;
@@ -287,16 +249,17 @@ const Anilist = ( () => {
 
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
+			data.filter( (i) => {
+				debugger;
+				if(i.name_first) return true;
+				return false;
+			});
 			set = set.concat(data);
 			if(data.length>=20) {
 				anilistPage++;
 				recursiveSearch(query, set, callback);
 			}
 			else {
-				set.filter( (i) => {
-					if(i.name_first) return true;
-					return false;
-				});
 				callback(set);
 			}
 		}, (err) => { console.log('recursiveSearch err',err); });
@@ -330,6 +293,10 @@ const Anilist = ( () => {
 		},
 		characterSearch: (query, callback) => {
 			anilistPage = 1;
+			if(query.length<3) {
+				alert('Please enter at least 2 characters.');
+				return;
+			}
 			getAnilistToken().then( (data) => {
 				if(data) anilistAccessToken = data;
 				recursiveSearch(query,[],callback);
