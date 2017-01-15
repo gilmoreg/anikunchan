@@ -32,6 +32,12 @@ const Google = ( () => {
 			item.numAPICalls++;
 			$.getJSON(googleEndpoint, gQuery)
 			.done( (data) => {
+				/*data.items = data.items.filter( (i) => {
+					if(i.link.includes('wikia')) {
+						return false;
+					}
+					return true;
+				});*/
 				resolve(data);
 			})
 			.fail( (msg) => {
@@ -65,10 +71,17 @@ const Google = ( () => {
 		});
 	};
 
+	const buildHTML = (e) => {
+		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
+					//`<a href="#" data-featherlight="${e.link}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></a>` + 
+					`<a href="${e.link}" data-featherlight="image"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></a>` + 
+				`</div>`;
+	}
+
 	const getCacheItem = (q) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
 		// Filter out expired results
-		cache.filter( (a) => {
+		cache = cache.filter( (a) => {
 			if(a.expires < Date.now()) return false;
 			return true;
 		});
@@ -87,7 +100,7 @@ const Google = ( () => {
     	let html = '';
     	item.results.forEach( (e) => {
 			if(e.image) {
-				html+=`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`;
+				html+= buildHTML(e);
 			}
 		});
 		$('.google-slick').html(html);
@@ -108,7 +121,7 @@ const Google = ( () => {
 				if(items) {
 					items.forEach( (e) => {
 						if(e.image) {
-							$('.google-slick').slick('slickAdd',`<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`);
+							$('.google-slick').slick('slickAdd', buildHTML(e));
 						}
 					});
 				}			
@@ -207,7 +220,6 @@ const YouTube = ( () => {
     	// Event handlers
     	$('.youtube-videos').on('click','.ytvid', (event) => {
     		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" frameborder="0" class="youtube-video"></iframe>`;
-    		CharacterPage.openModal(html);
     	});
     	
     	// Pagination
@@ -266,7 +278,7 @@ const Anilist = ( () => {
 
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
-			data.filter( (i) => {
+			data = data.filter( (i) => {
 				if(i.name_first) return true;
 				return false;
 			});
@@ -391,7 +403,7 @@ const Search = ( () => {
 		let	union = pairs1.length + pairs2.length;
 		
 		pairs1.forEach( (p1) => {
-			pairs2.filter( (p2) => {
+			pairs2 = pairs2.filter( (p2) => {
 				if(p1===p2) {
 					intersection++;
 					return false;
@@ -413,7 +425,7 @@ const Search = ( () => {
 
 		const query = $('#al-query').val().trim();
 
-		data.filter( (a) => {
+		data = data.filter( (a) => {
 			if(a.name_first) return true;
 			else return false;
 		});
@@ -471,13 +483,6 @@ const CharacterPage = ( () => {
 		$('.links-list').html(html);
 	}
 
-	const closeModal = () => {
-		$('.modal-content').empty();
-		$('.overlay').removeClass('dim');
-		$('#lightbox').addClass('hidden');
-		$('.overlay').off('click');
-	}
-
 	return {
 		createPage: (data) => {
 			Anilist.render(data);
@@ -486,17 +491,6 @@ const CharacterPage = ( () => {
 			Google.query(query);
 			setLinks(query);
 			$('.background').removeClass('hidden');
-		},
-		openModal: (content) => {
-			$('.modal-content').html(content);
-			$('.overlay').addClass('dim');
-			$('#lightbox').removeClass('hidden');
-			$('.overlay').on('click', (event) => {
-				closeModal();
-			});
-		},
-		closeModal: () => {
-			closeModal();
 		}
 	}
 })();	
@@ -526,10 +520,7 @@ const hideSpinner = () => {
 	$('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
 }
 
-const closeModal = () => {
-	CharacterPage.closeModal();
-}
-
 $(document).ready(function() {
+	$.featherlight.defaults.loading = '<div class="spinner"></div>';
 	$('#al-query').focus();
 });
