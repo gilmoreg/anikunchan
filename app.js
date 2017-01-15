@@ -49,9 +49,7 @@ const Google = ( () => {
 		}
 
 		return new Promise( (resolve, reject) => {
-			console.log('googleSearch',cacheItem);
 			googleAPICall(cacheItem).then( (data) => {
-				console.log('googleSearch here we go',data);
 				if(data.items) {
 					cacheItem.results = cacheItem.results.concat(data.items);
 					if(returnType === 'cache') resolve(cacheItem);
@@ -62,7 +60,7 @@ const Google = ( () => {
 				}
 			})
 			.catch( (msg) => {
-				console.log('googlesearch reject',msg);
+				reject(msg);
 			});
 		});
 	};
@@ -103,8 +101,8 @@ const Google = ( () => {
 
 		// On before slide change
 		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
-			// Attempt to fetch more results
-			console.log('change',currentSlide,item);
+			// Attempt to fetch more results, then add them to the slick
+			// googleSearch will cache the items; if the user selects this character again they will load when slick inits
 			googleSearch(item, '').then( (data) => {
 				let items = data.items || data.results;
 				if(items) {
@@ -116,7 +114,7 @@ const Google = ( () => {
 				}			
 			})
 			.catch( (msg) => {
-				console.log('slickevent reject',msg);
+				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
 			});
 		});
 	}
