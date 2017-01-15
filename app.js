@@ -250,7 +250,6 @@ const Anilist = ( () => {
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
 			data.filter( (i) => {
-				debugger;
 				if(i.name_first) return true;
 				return false;
 			});
@@ -293,7 +292,7 @@ const Anilist = ( () => {
 		},
 		characterSearch: (query, callback) => {
 			anilistPage = 1;
-			if(query.length<3) {
+			if(query.length<2) {
 				alert('Please enter at least 2 characters.');
 				return;
 			}
@@ -316,13 +315,21 @@ const Anilist = ( () => {
 
 			$('.long-description').html(description);
 			$('.appears-in-list').empty();
-			// Sorting anime by start date helps reduce bad Google results (due to OVA/ONAs and shorts sometimes coming first)
-			data.anime.sort( (a,b) => {
-				return a.start_date_fuzzy - b.start_date_fuzzy;
-			});
-			data.anime.forEach((anime) => {
-				$('.appears-in-list').append(`<li><a href="https://anilist.co/anime/${anime.id}" target="_blank">${animeTitle(anime)}</a></li>`);
-			});			
+			
+			if(data.anime.length>0) {
+				// Sorting anime by start date helps reduce bad Google results (due to OVA/ONAs and shorts sometimes coming first)
+				data.anime.sort( (a,b) => {
+					return a.start_date_fuzzy - b.start_date_fuzzy;
+				});
+
+				data.anime.forEach((anime) => {
+					$('.appears-in-list').append(`<li><a href="https://anilist.co/anime/${anime.id}" target="_blank">${animeTitle(anime)}</a></li>`);
+				});
+				$('.appears-in').removeClass('hidden');
+			}
+			else {
+				$('.appears-in').addClass('hidden');	
+			}
 		},
 		getName: (data) => {
 			return name(data);
