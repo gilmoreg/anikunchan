@@ -97,9 +97,14 @@ ul {
 }
 
 .summary, .google-image-container, .youtube-video-container {
+	max-width: 768px;
 	margin-top: 5px;
 	padding: 10px;
 	background-color: #ebebeb;
+}
+
+.google-image-container {
+	position: relative;
 }
 
 h2 {
@@ -129,6 +134,15 @@ h2 {
 	display: flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
+}
+
+.googleimages {
+	display: block;
+}
+
+.googleimages > .gimage {
+	float: left;
+	max-width: 31%;
 }
 
 .gimage, .ytvid {
@@ -174,7 +188,7 @@ h2 {
 .youtube-video, .google-image {
 	object-fit: contain;
 	width: 100%;
-	height: 90%;
+	height: 100%;
 }
 
 /* Might merge these with identical rules above, or they might need individual styling */
@@ -241,4 +255,15 @@ h2 {
 
 .blue {
 	outline: 1px solid blue;	
+}
+
+.cf:before, .cf:after {
+	content: " ";
+	/* 1 */
+	display: table;
+	/* 2 */
+}
+
+.cf:after {
+	clear: both;
 }

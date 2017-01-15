@@ -74,21 +74,42 @@ const Google = ( () => {
 		$('.google-image-container').removeClass('hidden');
 
 		let html = '';
-		// could do this math on the fly, but this is more readable
-		// pagination code should make sure that 'start' is never beyond the available results
-		// so we don't scroll into an empty div
-		const start = displayPage*numToShow; 
-		const end = Math.min((start + numToShow),(item.results.length-1));
-
-    	for(let i=start;i<end;i++) {
-    		const e = item.results[i];
-    		if(e.image) {
+		item.results.forEach( (e) => {
+			if(e.image) {
     			html += `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></div>`;
     		}
-    	}
+		});
 
     	// HTML
-    	$('.googleimages').html(html);
+    	$('.google-slick').html(html);
+
+    	// Slick
+		$('.google-slick').slick({
+			//lazyLoad: 'ondemand',
+			slidesToShow: 4,
+			slidesToScroll: 4,
+			dots: true,
+			infinite: false,
+			responsive: [
+				{
+				  breakpoint: 1024,
+				  settings: {
+					slidesToShow: 3,
+					slidesToScroll: 3,
+					infinite: true,
+					dots: true
+				  }
+				},
+				{
+				  breakpoint: 600,
+				  settings: {
+					slidesToShow: 2,
+					slidesToScroll: 2
+				  }
+				}
+			]
+		});
+    	/*
 
     	// Event handlers
     	$('.googleimages').on('click','.gimage', (event) => {
@@ -126,7 +147,7 @@ const Google = ( () => {
     	else {
     		$('#gimages-next').off('click');
     		$('#gimages-next').addClass('dim-arrow');
-    	}
+    	}*/
 	}
 
 	return {
@@ -206,7 +227,7 @@ const YouTube = ( () => {
 
     	// Event handlers
     	$('.youtube-videos').on('click','.ytvid', (event) => {
-    		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" class="youtube-video"></iframe>`;
+    		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" frameborder="0" class="youtube-video"></iframe>`;
     		CharacterPage.openModal(html);
     	});
     	
@@ -267,7 +288,7 @@ const Anilist = ( () => {
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
 			set = set.concat(data);
-			if(data.length>20) {
+			if(data.length>=20) {
 				anilistPage++;
 				recursiveSearch(query, set, callback);
 			}
