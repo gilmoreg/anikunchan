@@ -407,6 +407,7 @@ const Search = ( () => {
 			$('.al-search-results').html("No results");
 			return;
 		}
+		$('.search-button').html(`<i class="fa fa-search" aria-hidden="true"></i>`);
 		showResults();
 		let html = '';
 
@@ -501,6 +502,8 @@ const CharacterPage = ( () => {
 })();	
 
 const search = () => {
+	showResults();
+	$('.search-button').html('<div class="spinner"></div>');
 	Search.performSearch();
 	$('#al-query').blur();
 }
