@@ -65,7 +65,7 @@ nav input {
   z-index: 9999;
 }
 
-.spinner--hidden {
+.hidden {
   display: none;
 }
 

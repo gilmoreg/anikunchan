@@ -32,12 +32,6 @@ const Google = ( () => {
 			item.numAPICalls++;
 			$.getJSON(googleEndpoint, gQuery)
 			.done( (data) => {
-				/*data.items = data.items.filter( (i) => {
-					if(i.link.includes('wikia')) {
-						return false;
-					}
-					return true;
-				});*/
 				resolve(data);
 			})
 			.fail( (msg) => {
