@@ -8,7 +8,7 @@
 }
 
 /* Non-mobile, grid */
-@media only screen and (min-width: 768px) {
+@media (min-width: 768px) {
     .col-1 {width: 8.2%;}
     .col-2 {width: 16.66%;}
     .col-3 {width: 25%;}
@@ -21,5 +21,4 @@
     .col-10 {width: 83.33%;}
     .col-11 {width: 91.66%;}
     .col-12 {width: 100%;}
-    /*.yt-vid {flex-basis: 50%; width:50%;}*/
 }

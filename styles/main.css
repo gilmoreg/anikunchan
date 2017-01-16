@@ -15,10 +15,11 @@ nav .logo {
 	height: 100%;
 	color: #00c2ff;
 	padding-top: 5px;
+	font-size: 2em;
 }
 
 nav h1 {
-	font-size: 22px;
+	font-size: 2.5em;
 	margin-top: 0.5em;
 }
 
@@ -29,14 +30,16 @@ nav .search-box {
 }
 
 nav .search-button {
-	width: 32px;
-	height: 32px;
-	padding-left: 4px;
-	padding-top: 0px;
+	width: 36px;
+	height: 36px;
+	padding-left: 6px;
+	padding-top: 2px;
+	vertical-align: top;
 }
 
 nav input {
 	width: 50%;
+	height: 100%
 }
 
 .toggle-results {
@@ -72,20 +75,28 @@ body {
 	background-attachment: fixed;
 }
 
+.app {
+	max-width: 1024px;
+	padding-right: 5px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .portrait h1,h5 {
 	padding-left: 5px;
 	margin-top: 0px;
 	margin-bottom: 0px;
+	text-align: center;
 }
 
 .portrait {
-	padding: 5px 20px 10px 20px;
+	padding: 10px 20px 10px 20px;
 	background-color: #ebebeb;
 	margin: 5px;
 }
 
 .portrait-image {
-	text-align: center;
+	
 }
 
 .portrait-image img {
@@ -104,12 +115,11 @@ body {
 }
 
 ul {
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin: 5px;
+	color: #00c2ff;
 }
 
 .summary, .google-image-container, .youtube-video-container {
-	max-width: 768px;
 	margin-top: 5px;
 	padding: 10px;
 	background-color: #ebebeb;
@@ -193,13 +203,15 @@ h2 {
 	background-color: #fff8cc;
 }
 
-/* Might merge these with identical rules above, or they might need individual styling */
+.search {
+	background: linear-gradient(to bottom, rgba(167,207,223,1) 0%,rgba(35,83,138,1) 100%);
+}
+
 .al-search-results {
+	max-width: 1660px;
 	text-align: center;
-	display: flex;
 	justify-content: space-around;
 	flex-flow: row wrap;
-	background: linear-gradient(to bottom, rgba(167,207,223,1) 0%,rgba(35,83,138,1) 100%);
 }
 
 .aniCharSearch {
@@ -222,6 +234,15 @@ h2 {
 
 .aniCharSearch:hover {
 	background-color: #fff8cc;
+}
+
+.ani-search-name {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: auto;
+	line-height: 20px;
+	padding-top: 5px;
 }
 
 .toggle-results:hover .fa-chevron-down {
@@ -326,4 +347,11 @@ h2 {
 .featherlight-loading .featherlight-close,
 .featherlight-loading .featherlight-inner {
   display: none;
+}
+
+@media (min-width: 1440px) {
+	.app, .search {
+		max-width 1024px;
+		margin: 0 auto;
+	)
 }

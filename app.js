@@ -86,7 +86,9 @@ const Google = ( () => {
 
 	const buildImageHTML = (e) => {
 		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
-					`<a href="${e.link}" data-featherlight="image"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></a>` + 
+					`<a href="${e.link}" data-featherlight="image">` + 
+						`<img src="${e.image.thumbnailLink}" onerror="imgError(this)" alt="${e.snippet}">` + 
+					`</a>` + 
 				`</div>`;
 	}
 
@@ -487,12 +489,14 @@ const Search = ( () => {
 	const buildSearchResult = (element) => {
 		let name = element.name_first;
 		if(element.name_last) name += ' ' + element.name_last;
-		return `<div class="col-3 aniCharSearch" id="${element.id}">` +
+		return (
+			`<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
 				`<div class="ani-search-thumb">` +
-					`<img src="${element.image_url_med}" onerror="this.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'" alt="${name}">` +
+					`<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
 				`</div>` +
 				`<div class="ani-search-name">${name}</div>` +
-			`</div>`;
+			`</div>`
+		);
 	}
 
 	return {
@@ -528,7 +532,7 @@ const CharacterPage = ( () => {
 			YouTube.queryYouTube(query);
 			Google.query(query);
 			setLinks(query);
-			$('.background').removeClass('hidden');
+			$('.app').removeClass('hidden');
 		}
 	}
 })();	
@@ -556,6 +560,12 @@ const showSpinner = () => {
 
 const hideSpinner = () => {
 	$('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
+}
+
+const imgError = (image) => {
+    image.onerror = "";
+    image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'
+    return true;
 }
 
 $(document).ready(function() {
