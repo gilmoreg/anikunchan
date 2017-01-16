@@ -8,24 +8,17 @@ let state = {
 }
 
 const Google = ( () => {
-	const imagesEndpoint = 'https://www.googleapis.com/customsearch/v1';
+	const imagesEndpoint = '';
+	const youtubeEndpoint = '';
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
 
 	let imageCache = [];
+	let youtubeCache = [];
 
-	const googleAPICall = (item) => {
+	const googleAPICall = (endpoint, gQuery, item) => {
 		return new Promise( (resolve, reject) => {
-			const gQuery = {
-				q: item.query,
-				key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-				cx: '017818390200612997677:nulntbij5kc',
-				searchType: 'image',
-				num: 10, // Upper limit in Google CSE
-				safe: 'medium',
-				start: item.numAPICalls*10+1
-			}
 			item.numAPICalls++;
-			$.getJSON(imagesEndpoint, gQuery)
+			$.getJSON(endpoint, gQuery)
 			.done( (data) => {
 				resolve(data);
 			})
@@ -36,7 +29,7 @@ const Google = ( () => {
 	}
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
-	const googleSearch = (cacheItem, returnType) => {
+	const googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
 		if(cacheItem.numAPICalls > maxCalls) { 
 			return new Promise( (resolve, reject) => {
 				reject('maxcalls exceeded');
@@ -44,7 +37,7 @@ const Google = ( () => {
 		}
 
 		return new Promise( (resolve, reject) => {
-			googleAPICall(cacheItem).then( (data) => {
+			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
 				if(data.items) {
 					cacheItem.results = cacheItem.results.concat(data.items);
 					if(returnType === 'cache') resolve(cacheItem);
@@ -60,9 +53,39 @@ const Google = ( () => {
 		});
 	};
 
-	const buildHTML = (e) => {
+	const imageSearch = (cacheItem, returnType) => {
+		const gQuery = {
+			q: cacheItem.query,
+			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+			cx: '017818390200612997677:nulntbij5kc',
+			searchType: 'image',
+			num: 10, // Upper limit in Google CSE
+			safe: 'medium',
+			start: cacheItem.numAPICalls*10+1
+		}
+		// Probably not this simple? idk
+		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
+	};
+
+	// YT using paging instead of start index
+	const ytSearch = (cacheItem, returnType) => {
+		const gQuery = {
+			part: 'snippet',
+		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+		    type: 'video',
+		    maxResults: '20',
+		    videoEmbeddable: true,
+		    safeSearch: 'moderate',
+		    q: cacheItem.query//,
+		    // pageToken: .... probably store this in cacheItem? 
+		    // Probably want to do this via prototypes instead of one big module
+		}
+		// Probably not this simple? idk
+		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/youtube/v3/search');
+	};
+
+	const buildImageHTML = (e) => {
 		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
-					//`<a href="#" data-featherlight="${e.link}"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></a>` + 
 					`<a href="${e.link}" data-featherlight="image"><img src="${e.image.thumbnailLink}" alt="${e.snippet}"></a>` + 
 				`</div>`;
 	}
@@ -89,7 +112,7 @@ const Google = ( () => {
     	let html = '';
     	item.results.forEach( (e) => {
 			if(e.image) {
-				html+= buildHTML(e);
+				html+= buildImageHTML(e);
 			}
 		});
 		$('.google-slick').html(html);
@@ -122,13 +145,13 @@ const Google = ( () => {
 		// On before slide change
 		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
 			// Attempt to fetch more results, then add them to the slick
-			// googleSearch will cache the items; if the user selects this character again they will load when slick inits
-			googleSearch(item, '').then( (data) => {
+			// this will cache the items; if the user selects this character again they will load when slick inits
+			imageSearch(item, '').then( (data) => {
 				let items = data.items || data.results;
 				if(items) {
 					items.forEach( (e) => {
 						if(e.image) {
-							$('.google-slick').slick('slickAdd', buildHTML(e));
+							$('.google-slick').slick('slickAdd', buildImageHTML(e));
 						}
 					});
 				}			
@@ -167,7 +190,7 @@ const Google = ( () => {
 					results: []
 				};
 				imageCache.push(item);
-				googleSearch(item, 'cache').then( (i) => {
+				imageSearch(item, 'cache').then( (i) => {
 					displayGoogleData(i);
 				}), (msg) => { console.log('nocache reject',msg); };
 			}
@@ -261,17 +284,38 @@ const Anilist = ( () => {
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
 		// These tokens expire after 1 hour - giving myself 20 seconds leeway
-		if((Date.now()/1000) < (anilistAccessToken.expires-20)) return new Promise( (resolve,reject) => { resolve(); } ); 
-		const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-		return Promise.resolve( $.post(anilistAuthTokenPost) ); 
+		return new Promise( (resolve, reject) => {
+			if((Date.now()/1000) < (anilistAccessToken.expires-20)) resolve(); 
+			const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
+			$.post(anilistAuthTokenPost)
+			.done( (data) => {
+				resolve(data);
+			})
+			.fail( (msg) => {
+				reject(msg);
+			});
+		});
 	}
 
 	const anilistCharSearch = (query) => {
-		return Promise.resolve( $.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`) );
+		return new Promise( (resolve,reject) => {
+			$.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`)
+			.done( (data) => {
+				resolve(data);
+			})
+			.fail( (msg) => {
+				reject(msg);
+			});
+		});
 	}
 
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
+			if(data === undefined || data.error) {
+				callback();
+				return;
+				// TODO Need to stop the spinner
+			}
 			data = data.filter( (i) => {
 				if(i.name_first) return true;
 				return false;
@@ -409,7 +453,7 @@ const Search = ( () => {
 	}
 
 	const renderSearch = (data) => {
-		if(data.error) {
+		if(data===undefined || data.error) {
 			$('.al-search-results').html("No results");
 			return;
 		}
