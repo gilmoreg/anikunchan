@@ -1,19 +1,10 @@
 'use strict';
 /*
 */
-let state = {
-	searchStrings: [],
-	anilistAccessToken: {},
-	anilistPage: 1,
-}
-
-const Google = ( () => {
-	const imagesEndpoint = '';
-	const youtubeEndpoint = '';
+const GoogleImages = ( () => {
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
-
-	let imageCache = [];
-	let youtubeCache = [];
+	const container = $('.google-image.container');
+	let cache = [];
 
 	const googleAPICall = (endpoint, gQuery, item) => {
 		return new Promise( (resolve, reject) => {
@@ -26,16 +17,14 @@ const Google = ( () => {
 				reject(msg);
 			});
 		});
-	}
+	};
 
-	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
 	const googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
 		if(cacheItem.numAPICalls > maxCalls) { 
 			return new Promise( (resolve, reject) => {
 				reject('maxcalls exceeded');
 			});
 		}
-
 		return new Promise( (resolve, reject) => {
 			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
 				if(data.items) {
@@ -53,73 +42,34 @@ const Google = ( () => {
 		});
 	};
 
-	const imageSearch = (cacheItem, returnType) => {
-		const gQuery = {
-			q: cacheItem.query,
-			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-			cx: '017818390200612997677:nulntbij5kc',
-			searchType: 'image',
-			num: 10, // Upper limit in Google CSE
-			safe: 'medium',
-			start: cacheItem.numAPICalls*10+1
-		}
-		// Probably not this simple? idk
-		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
-	};
-
-	// YT using paging instead of start index
-	const ytSearch = (cacheItem, returnType) => {
-		const gQuery = {
-			part: 'snippet',
-		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-		    type: 'video',
-		    maxResults: '20',
-		    videoEmbeddable: true,
-		    safeSearch: 'moderate',
-		    q: cacheItem.query//,
-		    // pageToken: .... probably store this in cacheItem? 
-		    // Probably want to do this via prototypes instead of one big module
-		}
-		// Probably not this simple? idk
-		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/youtube/v3/search');
-	};
-
-	const buildImageHTML = (e) => {
-		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
-					`<a href="${e.link}" data-featherlight="image">` + 
-						`<img src="${e.image.thumbnailLink}" onerror="imgError(this)" alt="${e.snippet}">` + 
-					`</a>` + 
-				`</div>`;
-	}
-
 	const getCacheItem = (q, cache) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
 		// Filter out expired results
-		cache = cache.filter( (a) => {
-			if(a.expires < Date.now()) return false;
-			return true;
-		});
+		if(cache) {
+			cache = cache.filter( (a) => {
+				if(a.expires < Date.now()) return false;
+				return true;
+			});
 
-		for(let i=0;i<cache.length;i++) {
-			if(cache[i].query === q) {
-				return cache[i];
+			for(let i=0;i<cache.length;i++) {
+				if(cache[i].query === q) {
+					return cache[i];
+				}
 			}
 		}
 		return undefined;
-	}
+	};
 
-	const gslick = (item) => {
-		if($('.google-slick').hasClass('slick-initialized')) $('.google-slick').slick('unslick');
+	const gslick = (item, element) => {
+		if(container.hasClass('slick-initialized')) container.slick('unslick');
 
     	let html = '';
     	item.results.forEach( (e) => {
-			if(e.image) {
-				html+= buildImageHTML(e);
-			}
+			html+= buildImageHTML(e);
 		});
-		$('.google-slick').html(html);
+		container.html(html);
 
-		$('.google-slick').not('.slick-initialized').slick({
+		container.not('.slick-initialized').slick({
 			slidesToShow: 4,
 			slidesToScroll: 4,
 			dots: true,
@@ -143,9 +93,44 @@ const Google = ( () => {
 			 	}
 			]
 		});
+	};
+
+	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
+	const imageSearch = (cacheItem, returnType) => {
+		const gQuery = {
+			q: cacheItem.query,
+			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+			cx: '017818390200612997677:nulntbij5kc',
+			searchType: 'image',
+			num: 10, // Upper limit in Google CSE
+			safe: 'medium',
+			start: cacheItem.numAPICalls*10+1
+		}
+		// Probably not this simple? idk TODO
+		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
+	};
+
+	const buildImageHTML = (e) => {
+		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
+					`<a href="${e.link}" data-featherlight="image">` + 
+						`<img src="${e.image.thumbnailLink}" onerror="imgError(this)" alt="${e.snippet}">` + 
+					`</a>` + 
+				`</div>`;
+	};
+
+	const display = (item) => {
+		console.log('display (image)',item);
+
+		if(item===undefined || item.results.length===0) {
+			container.addClass('hidden');
+			return;
+		}
+		container.removeClass('hidden');
+		// item, element, build, search
+    	gslick(item, container,buildImageHTML);
 
 		// On before slide change
-		$('.google-slick').on('beforeChange', function(event, slick, currentSlide, nextSlide) {
+		container.on('beforeChange', function(event) {//, slick, currentSlide, nextSlide) { TODO
 			// Attempt to fetch more results, then add them to the slick
 			// this will cache the items; if the user selects this character again they will load when slick inits
 			imageSearch(item, '').then( (data) => {
@@ -153,7 +138,7 @@ const Google = ( () => {
 				if(items) {
 					items.forEach( (e) => {
 						if(e.image) {
-							$('.google-slick').slick('slickAdd', buildImageHTML(e));
+							element.slick('slickAdd', buildImageHTML(e));
 						}
 					});
 				}			
@@ -162,26 +147,15 @@ const Google = ( () => {
 				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
 			});
 		});
-	}
-
-	const displayGoogleData = (item) => {
-		console.log('displayGoogleData',item);
-
-		if(item===undefined || item.results.length===0) {
-			$('.google-image-container').addClass('hidden');
-			return;
-		}
-		$('.google-image-container').removeClass('hidden');
-    	gslick(item);
-	}
-
+	};
+	// Entry point - the first Google search for a new character result
 	return {
-		// Entry point - the first Google search for a new character result
 		query: (q) => {
 			// If we have this item cached, return that
-			let item = getCacheItem(q, imageCache); // TODO
+			console.log('query',cache);
+			let item = getCacheItem(q, cache); 
 			if(item) {
-				displayGoogleData(item);
+				display(item);
 			}
 			else {
 				// No cached result - call API from scratch
@@ -191,9 +165,9 @@ const Google = ( () => {
 					numAPICalls: 0,
 					results: []
 				};
-				imageCache.push(item);
+				cache.push(item);
 				imageSearch(item, 'cache').then( (i) => {
-					displayGoogleData(i);
+					display(i);
 				}), (msg) => { console.log('nocache reject',msg); };
 			}
 		}
@@ -201,86 +175,193 @@ const Google = ( () => {
 })();
 
 const YouTube = ( () => {
-	const youTubeEndpoint = 'https://www.googleapis.com/youtube/v3/search';
-	const youTubeAPICall = (query, token, callback) => {
+	const maxCalls = 2;
+	const container = $('.youtube-video-container');
+	let cache = [];
+
+	const googleAPICall = (endpoint, gQuery, item) => {
+		return new Promise( (resolve, reject) => {
+			item.numAPICalls++;
+			$.getJSON(endpoint, gQuery)
+			.done( (data) => {
+				resolve(data);
+			})
+			.fail( (msg) => {
+				reject(msg);
+			});
+		});
+	};
+
+	const googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
+		if(cacheItem.numAPICalls > maxCalls) { 
+			return new Promise( (resolve, reject) => {
+				reject('maxcalls exceeded');
+			});
+		}
+		return new Promise( (resolve, reject) => {
+			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
+				if(data.items) {
+					cacheItem.results = cacheItem.results.concat(data.items);
+					if(returnType === 'cache') resolve(cacheItem);
+					else resolve(data);
+				}
+				else {
+					reject(data);
+				}
+			})
+			.catch( (msg) => {
+				reject(msg);
+			});
+		});
+	};
+
+	const getCacheItem = (q, cache) => {
+		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
+		// Filter out expired results
+		if(cache) {
+			cache = cache.filter( (a) => {
+				if(a.expires < Date.now()) return false;
+				return true;
+			});
+
+			for(let i=0;i<cache.length;i++) {
+				if(cache[i].query === q) {
+					return cache[i];
+				}
+			}
+		}
+		return undefined;
+	};
+
+	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
+	const videoSearch = (cacheItem, returnType) => {
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 		    type: 'video',
-		    maxResults: '4',
+		    maxResults: '10',
 		    pageToken: token,
 		    videoEmbeddable: true,
 		    safeSearch: 'moderate',
-		    q: query
-		} 	
-		$.getJSON(youTubeEndpoint, ytQuery, callback);
-	}
+		    q: cacheItem.query
+		}
+		// Probably not this simple? idk TODO
+		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/youtube/v3/search');
+	};
 
-	const displayData = (data) => {
-		if(data.items.length===0) {
-			$('.youtube-video-container').addClass('hidden');
+	const buildVideoHTML = (e) => {
+		const snippet = element.snippet;
+		let title = snippet.title;
+		if(title.length > 50) title = title.substring(0,50) + '...';
+		return `<div class="ytvid" id="${e.id.videoId}">` + 
+					`<div class="yt-thumb">`+ 
+						`<img src="${snippet.thumbnails.default.url}" alt="${title}">` + 
+					`</div>` + 
+					`<div class="yt-desc">${title}</div>`+ 
+				`</div>`;
+	};
+
+	const gslick = (item) => {
+		if(container.hasClass('slick-initialized')) container.slick('unslick');
+
+    	let html = '';
+    	item.results.forEach( (e) => {
+			html+= buildYouTubeHTML(e);
+		});
+		container.html(html);
+
+		container.not('.slick-initialized').slick({
+			slidesToShow: 4,
+			slidesToScroll: 4,
+			dots: true,
+			infinite: false,
+			responsive: [
+				{
+					breakpoint: 1024,
+					settings: {
+						slidesToShow: 3,
+						slidesToScroll: 3,
+						dots: true
+					}
+				},
+				{
+					breakpoint: 600,
+					settings: {
+						slidesToShow: 2,
+						slidesToScroll: 2,
+						dots: false
+					}
+			 	}
+			]
+		});
+	};
+
+	const display = (data) => {
+		if(data.items.length===0) {				// TODO not sure if this is the right test for videos
+			container.addClass('hidden');
 			return;
 		}
-		$('.youtube-video-container').removeClass('hidden');
+		container.removeClass('hidden');
 
     	let html = '';
     	data.items.forEach( (element, index) => {
-    		if(element.id.videoId) {
-    			const snippet = element.snippet;
-    			let title = snippet.title;
-    			if(title.length > 50) title = title.substring(0,50) + '...';
-    			html += `<div class="ytvid" id="${element.id.videoId}"><div class="yt-thumb"><img src="${snippet.thumbnails.default.url}" alt="${title}"></div><div class="yt-desc">${title}</div></div>`;
+    		if(element.id.videoId) {	
+    			html += buildVideoHTML(element);
     		}
     	});
 
     	// HTML
-    	$('.youtube-videos').html(html);
+    	container.html(html);
 
-    	// Event handlers
-    	$('.youtube-videos').on('click','.ytvid', (event) => {
-    		let html = `<iframe src="https://www.youtube.com/embed/${$(event.target).closest('.ytvid').attr('id')}?autoplay=1" frameborder="0" class="youtube-video"></iframe>`;
-    	});
-    	
-    	// Pagination
-    	$('#yt-prev, #yt-next').off('click').removeClass('dim-arrow');
-
-    	if(data.prevPageToken) {
-			$('#yt-prev').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#yt-prev').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.prevPageToken, displayData);
-	    	});
-    	}
-    	else {
-    		$('#yt-prev').off('click');
-    		$('#yt-prev').addClass('dim-arrow');
-    	}
-
-    	if(data.nextPageToken) {
-			$('#yt-next').on('click', (event) => {
-	    		event.preventDefault();
-	    		$('#yt-next').off('click');
-	    		youTubeAPICall(state.searchStrings.slice(-1)[0], data.nextPageToken, displayData);
-	    	});
-    	}
-    	else {
-    		$('#yt-next').off('click');
-    		$('#yt-next').addClass('dim-arrow');
-    	}
+    	// On before slide change
+		container.on('beforeChange', function(event) {//, slick, currentSlide, nextSlide) { TODO
+			// Attempt to fetch more results, then add them to the slick
+			// this will cache the items; if the user selects this character again they will load when slick inits
+			videoSearch(item, '').then( (data) => {
+				let items = data.items || data.results;
+				if(items) {
+					items.forEach( (e) => {
+						if(e.image) {
+							element.slick('slickAdd', buildVideoHTML(e));
+						}
+					});
+				}			
+			})
+			.catch( (msg) => {
+				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
+			});
+		});	
 	}
 
 	return {
-		queryYouTube: (query, token) => {
-			state.searchStrings.push(query);
-			youTubeAPICall(query, token, displayData);
+		query: (query, token) => {
+			// If we have this item cached, return that
+			console.log('query',cache);
+			let item = getCacheItem(q, cache); 
+			if(item) {
+				display(item);
+			}
+			else {
+				// No cached result - call API from scratch
+				item = {
+					query: q,
+					expire: Date.now()+1.08e7, // 3 hours in milliseconds
+					numAPICalls: 0,
+					results: []
+				};
+				cache.push(item);
+				videoSearch(item, 'cache').then( (i) => {
+					display(i);
+				}), (msg) => { console.log('nocache reject',msg); };
+			}
 		}
 	};
 })();
 
 const Anilist = ( () => {
 	const anilistEndPoint = 'https://anilist.co/api/';
-	let anilistAccessToken = state.anilistAccessToken;
-	let anilistPage = state.anilistPage;
+	let anilistAccessToken = {};
+	let anilistPage = 1;
 
 	const getAnilistToken = () => {
 		// Send POST to anilist API for client credentials token
@@ -530,7 +611,7 @@ const CharacterPage = ( () => {
 			Anilist.render(data);
 			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
 			YouTube.queryYouTube(query);
-			Google.query(query);
+			Images.query(query);
 			setLinks(query);
 			$('.app').removeClass('hidden');
 		}
