@@ -1,0 +1,45 @@
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  z-index: 0;
+  background-color: white;
+  /* Mobile default */
+  
+/* Testing values*/
+	height: 500px;
+	width: 500px;
+	top: -50%;
+	left: -50%;
+	transform: translate(50%, 50%);
+
+}
+
+@media only screen and (min-width: 768px) {
+  #lightbox { 
+  }
+}
+
+.lightbox-content {
+  background-color: darkgrey;
+  line-height: 0px;
+}
+
+.hidden {
+	display: none;
+}
+
+.dim {
+	display: block;
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	z-index: 0;                
+	/* Setting it lower had the onlines popping in front, higher had the lightbox dimmed, 
+	didn't seem to matter what I set the lightbox to */
+	-moz-opacity: 0.9;
+	opacity:.9;
+	filter: alpha(opacity=90);
+}
