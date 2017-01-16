@@ -16,11 +16,16 @@ Anikunchan enables you to search for your favorite anime characters and then see
 * The results of a Google Image search, with the ability to page through additional results
 * A similar display of a YouTube search
 
-Particular elements will be hidden if no results are available. Search results are sorted by relevance, and may be redisplayed once hidden.
+Particular elements will be hidden if no data are available. Search results are sorted by relevance, and may be redisplayed once hidden.
 
 ##Technical
 * This site is entirely browser-side, written in HTML, ES6 Javascript, CSS3, and JQuery. 
-* Additionally, the site uses [Marked](https://github.com/chjj/marked) to render Markdown in the summary section and [Font Awesome](http://fontawesome.io/) for pagination arrows.
+* Additionally, the site uses:
+  * [Marked](https://github.com/chjj/marked) to render Markdown in the summary section
+  * [Font Awesome](http://fontawesome.io/)
+  * [Bluebird](http://bluebirdjs.com/) to polyfill Promises
+  * [Slick](http://kenwheeler.github.io/slick/) for the carousel
+  * [Featherlight](https://github.com/noelboss/featherlight/) for the lightbox
 * The main datasource is the [Anilist.co API](https://anilist-api.readthedocs.io/en/latest/). 
   * The Javascript fetches an [access token](https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials) (good for one hour) and then does a recursive search using [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) to get every page of results.
   * The results are sorted by relevance according to the [Strike A Match](http://www.catalysoft.com/articles/StrikeAMatch.html) algorithm.
