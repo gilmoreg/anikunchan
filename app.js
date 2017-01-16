@@ -564,7 +564,7 @@ const hideSpinner = () => {
 
 const imgError = (image) => {
     image.onerror = "";
-    image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg'
+    image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
     return true;
 }
 
