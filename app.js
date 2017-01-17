@@ -3,7 +3,7 @@
 */
 const GoogleImages = ( () => {
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
-	const container = $('.google-image.container');
+	const container = $('.google-image-slick');
 	let cache = [];
 
 	const googleAPICall = (endpoint, gQuery, item) => {
@@ -138,7 +138,7 @@ const GoogleImages = ( () => {
 				if(items) {
 					items.forEach( (e) => {
 						if(e.image) {
-							element.slick('slickAdd', buildImageHTML(e));
+							container.slick('slickAdd', buildImageHTML(e));
 						}
 					});
 				}			
@@ -184,9 +184,11 @@ const YouTube = ( () => {
 			item.numAPICalls++;
 			$.getJSON(endpoint, gQuery)
 			.done( (data) => {
+				console.log('yt api',data);
 				resolve(data);
 			})
 			.fail( (msg) => {
+				console.log('yt api fail', msg);
 				reject(msg);
 			});
 		});
@@ -234,23 +236,23 @@ const YouTube = ( () => {
 	};
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
-	const videoSearch = (cacheItem, returnType) => {
+	const videoSearch = (cacheItem, returnType, token) => {
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
 		    type: 'video',
 		    maxResults: '10',
-		    pageToken: token,
 		    videoEmbeddable: true,
 		    safeSearch: 'moderate',
 		    q: cacheItem.query
 		}
+		if(token!=='') ytQuery.pageToken = token;
 		// Probably not this simple? idk TODO
-		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/youtube/v3/search');
+		return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
 	};
 
 	const buildVideoHTML = (e) => {
-		const snippet = element.snippet;
+		const snippet = e.snippet;
 		let title = snippet.title;
 		if(title.length > 50) title = title.substring(0,50) + '...';
 		return `<div class="ytvid" id="${e.id.videoId}">` + 
@@ -297,14 +299,15 @@ const YouTube = ( () => {
 	};
 
 	const display = (data) => {
-		if(data.items.length===0) {				// TODO not sure if this is the right test for videos
+		console.log('yt display',data);
+		if(data.results.length===0) {				// TODO not sure if this is the right test for videos
 			container.addClass('hidden');
 			return;
 		}
 		container.removeClass('hidden');
 
     	let html = '';
-    	data.items.forEach( (element, index) => {
+    	data.results.forEach( (element, index) => {
     		if(element.id.videoId) {	
     			html += buildVideoHTML(element);
     		}
@@ -334,7 +337,7 @@ const YouTube = ( () => {
 	}
 
 	return {
-		query: (query, token) => {
+		query: (q, token) => {
 			// If we have this item cached, return that
 			console.log('query',cache);
 			let item = getCacheItem(q, cache); 
@@ -347,6 +350,7 @@ const YouTube = ( () => {
 					query: q,
 					expire: Date.now()+1.08e7, // 3 hours in milliseconds
 					numAPICalls: 0,
+					token: '',
 					results: []
 				};
 				cache.push(item);
@@ -610,8 +614,8 @@ const CharacterPage = ( () => {
 		createPage: (data) => {
 			Anilist.render(data);
 			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
-			YouTube.queryYouTube(query);
-			Images.query(query);
+			YouTube.query(query);
+			GoogleImages.query(query);
 			setLinks(query);
 			$('.app').removeClass('hidden');
 		}
