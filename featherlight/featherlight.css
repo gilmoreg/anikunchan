@@ -112,7 +112,7 @@
 		border-bottom: 0;
 		padding: 0;
 		-webkit-overflow-scrolling: touch;
-		overflow-y: scroll;
+		overflow-y: hidden;
 	}
 
 	.featherlight iframe {

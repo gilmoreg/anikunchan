@@ -254,9 +254,12 @@ const YouTube = ( () => {
 		const snippet = e.snippet;
 		let title = snippet.title;
 		if(title.length > 50) title = title.substring(0,50) + '...';
+		const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width()*0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
+			`data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"`;
 		return `<div class="ytvid" id="${e.id.videoId}">` + 
 					`<div class="yt-thumb">`+ 
-						`<img src="${snippet.thumbnails.default.url}" alt="${title}">` + 
+						`<a href="https://www.youtube.com/embed/${e.id.videoId}?autoplay=1" ${iframeOptions}>`+
+						`<img src="${snippet.thumbnails.default.url}" alt="${title}"></a>` + 
 					`</div>` + 
 					`<div class="yt-desc">${title}</div>`+ 
 				`</div>`;
