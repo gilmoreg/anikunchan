@@ -458,13 +458,17 @@ const Anilist = ( () => {
 			// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
 			// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
 			let description = marked(data.info.replace(/~!.*?!~*/g, ''));
-			//.replace(/[<]br[^>]*[>]/gi,'') // remove line breaks
 			// Stretch goal: show only the first few lines until the user clicks "More"
 			description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
+			if(description.length>100) {
+				$('.long-description').html(description);
+				$('.summary').removeClass('hidden');
+			}
+			else {
+				$('.summary').addClass('hidden');	
+			}
 
-			$('.long-description').html(description);
-			$('.appears-in-list').empty();
-			
+			$('.appears-in-list').empty();			
 			if(data.anime.length>0) {
 				// Sorting anime by start date helps reduce bad Google results (due to OVA/ONAs and shorts sometimes coming first)
 				data.anime.sort( (a,b) => {
@@ -490,7 +494,6 @@ const Anilist = ( () => {
 })();
 
 const Search = ( () => {
-
 	// Relevance search adapted from http://www.catalysoft.com/articles/StrikeAMatch.html
 	const letterPairs = (str) => {
 	   let pairs = [];
