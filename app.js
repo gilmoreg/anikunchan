@@ -60,7 +60,7 @@ const GoogleImages = ( () => {
 		return undefined;
 	};
 
-	const gslick = (item, element) => {
+	const gslick = (item) => {
 		if(container.hasClass('slick-initialized')) container.slick('unslick');
 
     	let html = '';
@@ -126,8 +126,8 @@ const GoogleImages = ( () => {
 			return;
 		}
 		$('.google-image-container').removeClass('hidden');
-		// item, element, build, search
-    	gslick(item,container,buildImageHTML);
+
+    	gslick(item);
 
 		// On before slide change
 		container.on('beforeChange', function(event) {
@@ -332,7 +332,7 @@ const YouTube = ( () => {
 	}
 
 	return {
-		query: (q, token) => {
+		query: (q) => {
 			// If we have this item cached, return that
 			console.log('query',cache);
 			let item = getCacheItem(q, cache); 
