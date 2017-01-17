@@ -122,10 +122,10 @@ const GoogleImages = ( () => {
 		console.log('display (image)',item);
 
 		if(item===undefined || item.results.length===0) {
-			container.addClass('hidden');
+			$('.google-image-container').addClass('hidden');
 			return;
 		}
-		container.removeClass('hidden');
+		$('.google-image-container').removeClass('hidden');
 		// item, element, build, search
     	gslick(item,container,buildImageHTML);
 
@@ -302,10 +302,10 @@ const YouTube = ( () => {
 
 	const display = (item) => {
 		if(item===undefined || item.results.length===0) {
-			container.addClass('hidden');
+			$('.youtube-video-container').addClass('hidden');
 			return;
 		}
-		container.removeClass('hidden');
+		$('.youtube-video-container').removeClass('hidden');
 
     	gslick(item);
 
