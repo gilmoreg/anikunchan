@@ -537,6 +537,7 @@ const Search = ( () => {
 	const renderSearch = (data) => {
 		if(data===undefined || data.error) {
 			$('.al-search-results').html("No results");
+			hideSpinner();
 			return;
 		}
 		hideSpinner();
