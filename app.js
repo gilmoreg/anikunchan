@@ -127,10 +127,10 @@ const GoogleImages = ( () => {
 		}
 		container.removeClass('hidden');
 		// item, element, build, search
-    	gslick(item, container,buildImageHTML);
+    	gslick(item,container,buildImageHTML);
 
 		// On before slide change
-		container.on('beforeChange', function(event) {//, slick, currentSlide, nextSlide) { TODO
+		container.on('beforeChange', function(event) {
 			// Attempt to fetch more results, then add them to the slick
 			// this will cache the items; if the user selects this character again they will load when slick inits
 			imageSearch(item, '').then( (data) => {
@@ -176,7 +176,7 @@ const GoogleImages = ( () => {
 
 const YouTube = ( () => {
 	const maxCalls = 2;
-	const container = $('.youtube-video-container');
+	const container = $('.youtube-video-slick');
 	let cache = [];
 
 	const googleAPICall = (endpoint, gQuery, item) => {
@@ -184,11 +184,9 @@ const YouTube = ( () => {
 			item.numAPICalls++;
 			$.getJSON(endpoint, gQuery)
 			.done( (data) => {
-				console.log('yt api',data);
 				resolve(data);
 			})
 			.fail( (msg) => {
-				console.log('yt api fail', msg);
 				reject(msg);
 			});
 		});
@@ -204,6 +202,7 @@ const YouTube = ( () => {
 			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
 				if(data.items) {
 					cacheItem.results = cacheItem.results.concat(data.items);
+					cacheItem.token = data.nextPageToken;
 					if(returnType === 'cache') resolve(cacheItem);
 					else resolve(data);
 				}
@@ -236,7 +235,7 @@ const YouTube = ( () => {
 	};
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
-	const videoSearch = (cacheItem, returnType, token) => {
+	const videoSearch = (cacheItem, returnType) => {
 		const  ytQuery = {
 	    	part: 'snippet',
 		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
@@ -246,7 +245,7 @@ const YouTube = ( () => {
 		    safeSearch: 'moderate',
 		    q: cacheItem.query
 		}
-		if(token!=='') ytQuery.pageToken = token;
+		if(cacheItem.token!=='') ytQuery.pageToken = cacheItem.token; // TODO this might not be adding the right one? might have to track one for the whole object?
 		// Probably not this simple? idk TODO
 		return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
 	};
@@ -268,7 +267,7 @@ const YouTube = ( () => {
 
     	let html = '';
     	item.results.forEach( (e) => {
-			html+= buildYouTubeHTML(e);
+			html+= buildVideoHTML(e);
 		});
 		container.html(html);
 
@@ -298,34 +297,27 @@ const YouTube = ( () => {
 		});
 	};
 
-	const display = (data) => {
-		console.log('yt display',data);
-		if(data.results.length===0) {				// TODO not sure if this is the right test for videos
+	const display = (item) => {
+		if(item===undefined || item.results.length===0) {
 			container.addClass('hidden');
 			return;
 		}
 		container.removeClass('hidden');
 
-    	let html = '';
-    	data.results.forEach( (element, index) => {
-    		if(element.id.videoId) {	
-    			html += buildVideoHTML(element);
-    		}
-    	});
-
-    	// HTML
-    	container.html(html);
+    	gslick(item);
 
     	// On before slide change
-		container.on('beforeChange', function(event) {//, slick, currentSlide, nextSlide) { TODO
+		container.on('beforeChange', function(event) {
 			// Attempt to fetch more results, then add them to the slick
 			// this will cache the items; if the user selects this character again they will load when slick inits
 			videoSearch(item, '').then( (data) => {
-				let items = data.items || data.results;
+				let items = data.results || data.items;
+				console.log('slickadding yt',data);
 				if(items) {
 					items.forEach( (e) => {
-						if(e.image) {
-							element.slick('slickAdd', buildVideoHTML(e));
+						if(e.id.videoId) {
+							console.log('slickadding yt',e);
+							container.slick('slickAdd', buildVideoHTML(e));
 						}
 					});
 				}			
