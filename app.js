@@ -1,12 +1,9 @@
 'use strict';
 /*
 */
-const GoogleImages = ( () => {
+const Google = () => {
 	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
-	const container = $('.google-image-slick');
-	let cache = [];
-
-	const googleAPICall = (endpoint, gQuery, item) => {
+	this.googleAPICall = (endpoint, gQuery, item) => {
 		return new Promise( (resolve, reject) => {
 			item.numAPICalls++;
 			$.getJSON(endpoint, gQuery)
@@ -19,7 +16,7 @@ const GoogleImages = ( () => {
 		});
 	};
 
-	const googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
+	this.googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
 		if(cacheItem.numAPICalls > maxCalls) { 
 			return new Promise( (resolve, reject) => {
 				reject('maxcalls exceeded');
@@ -42,7 +39,7 @@ const GoogleImages = ( () => {
 		});
 	};
 
-	const getCacheItem = (q, cache) => {
+	this.getCacheItem = (q, cache) => {
 		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
 		// Filter out expired results
 		if(cache) {
@@ -59,6 +56,15 @@ const GoogleImages = ( () => {
 		}
 		return undefined;
 	};
+}
+
+
+const GoogleImages = ( () => {
+	const maxCalls = 2; // TODO
+	const container = $('.google-image-slick');
+	let cache = [];
+
+	Google.call(this);
 
 	const gslick = (item) => {
 		if(container.hasClass('slick-initialized')) container.slick('unslick');
@@ -119,8 +125,6 @@ const GoogleImages = ( () => {
 	};
 
 	const display = (item) => {
-		console.log('display (image)',item);
-
 		if(item===undefined || item.results.length===0) {
 			$('.google-image-container').addClass('hidden');
 			return;
@@ -152,7 +156,6 @@ const GoogleImages = ( () => {
 	return {
 		query: (q) => {
 			// If we have this item cached, return that
-			console.log('query',cache);
 			let item = getCacheItem(q, cache); 
 			if(item) {
 				display(item);
@@ -175,64 +178,11 @@ const GoogleImages = ( () => {
 })();
 
 const YouTube = ( () => {
-	const maxCalls = 2;
+	const maxCalls = 2; // TODO
 	const container = $('.youtube-video-slick');
 	let cache = [];
 
-	const googleAPICall = (endpoint, gQuery, item) => {
-		return new Promise( (resolve, reject) => {
-			item.numAPICalls++;
-			$.getJSON(endpoint, gQuery)
-			.done( (data) => {
-				resolve(data);
-			})
-			.fail( (msg) => {
-				reject(msg);
-			});
-		});
-	};
-
-	const googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
-		if(cacheItem.numAPICalls > maxCalls) { 
-			return new Promise( (resolve, reject) => {
-				reject('maxcalls exceeded');
-			});
-		}
-		return new Promise( (resolve, reject) => {
-			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
-				if(data.items) {
-					cacheItem.results = cacheItem.results.concat(data.items);
-					cacheItem.token = data.nextPageToken;
-					if(returnType === 'cache') resolve(cacheItem);
-					else resolve(data);
-				}
-				else {
-					reject(data);
-				}
-			})
-			.catch( (msg) => {
-				reject(msg);
-			});
-		});
-	};
-
-	const getCacheItem = (q, cache) => {
-		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
-		// Filter out expired results
-		if(cache) {
-			cache = cache.filter( (a) => {
-				if(a.expires < Date.now()) return false;
-				return true;
-			});
-
-			for(let i=0;i<cache.length;i++) {
-				if(cache[i].query === q) {
-					return cache[i];
-				}
-			}
-		}
-		return undefined;
-	};
+	Google.call(this);
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
 	const videoSearch = (cacheItem, returnType) => {
@@ -315,11 +265,9 @@ const YouTube = ( () => {
 			// this will cache the items; if the user selects this character again they will load when slick inits
 			videoSearch(item, '').then( (data) => {
 				let items = data.results || data.items;
-				console.log('slickadding yt',data);
 				if(items) {
 					items.forEach( (e) => {
 						if(e.id.videoId) {
-							console.log('slickadding yt',e);
 							container.slick('slickAdd', buildVideoHTML(e));
 						}
 					});
@@ -334,7 +282,6 @@ const YouTube = ( () => {
 	return {
 		query: (q) => {
 			// If we have this item cached, return that
-			console.log('query',cache);
 			let item = getCacheItem(q, cache); 
 			if(item) {
 				display(item);
