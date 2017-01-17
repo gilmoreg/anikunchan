@@ -56,22 +56,13 @@ const Google = () => {
 		}
 		return undefined;
 	};
-}
 
-
-const GoogleImages = ( () => {
-	const maxCalls = 2; // TODO
-	const container = $('.google-image-slick');
-	let cache = [];
-
-	Google.call(this);
-
-	const gslick = (item) => {
+	this.gslick = (data, container, builder) => {
 		if(container.hasClass('slick-initialized')) container.slick('unslick');
 
     	let html = '';
-    	item.results.forEach( (e) => {
-			html+= buildImageHTML(e);
+    	data.forEach( (e) => {
+			html+= builder(e);
 		});
 		container.html(html);
 
@@ -100,6 +91,15 @@ const GoogleImages = ( () => {
 			]
 		});
 	};
+}
+
+
+const GoogleImages = ( () => {
+	const maxCalls = 2; // TODO
+	const container = $('.google-image-slick');
+	let cache = [];
+
+	Google.call(this);
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
 	const imageSearch = (cacheItem, returnType) => {
@@ -131,7 +131,7 @@ const GoogleImages = ( () => {
 		}
 		$('.google-image-container').removeClass('hidden');
 
-    	gslick(item);
+    	gslick(item.results, container, buildImageHTML);
 
 		// On before slide change
 		container.on('beforeChange', function(event) {
@@ -215,41 +215,6 @@ const YouTube = ( () => {
 				`</div>`;
 	};
 
-	const gslick = (item) => {
-		if(container.hasClass('slick-initialized')) container.slick('unslick');
-
-    	let html = '';
-    	item.results.forEach( (e) => {
-			html+= buildVideoHTML(e);
-		});
-		container.html(html);
-
-		container.not('.slick-initialized').slick({
-			slidesToShow: 4,
-			slidesToScroll: 4,
-			dots: true,
-			infinite: false,
-			responsive: [
-				{
-					breakpoint: 1024,
-					settings: {
-						slidesToShow: 3,
-						slidesToScroll: 3,
-						dots: true
-					}
-				},
-				{
-					breakpoint: 600,
-					settings: {
-						slidesToShow: 2,
-						slidesToScroll: 2,
-						dots: false
-					}
-			 	}
-			]
-		});
-	};
-
 	const display = (item) => {
 		if(item===undefined || item.results.length===0) {
 			$('.youtube-video-container').addClass('hidden');
@@ -257,7 +222,7 @@ const YouTube = ( () => {
 		}
 		$('.youtube-video-container').removeClass('hidden');
 
-    	gslick(item);
+    	gslick(item.results, container, buildVideoHTML);
 
     	// On before slide change
 		container.on('beforeChange', function(event) {
