@@ -57,6 +57,37 @@ const Google = () => {
 		return undefined;
 	};
 
+	this.display = (item, container, slick_container, builder, search) => {
+		if(item===undefined || item.results.length===0) {
+			container.addClass('hidden');
+			return;
+		}
+		container.removeClass('hidden');
+
+    	this.gslick(item.results, slick_container, builder);
+
+    	// On before slide change
+		slick_container.on('beforeChange', function(event) {
+			// Attempt to fetch more results, then add them to the slick
+			// this will cache the items; if the user selects this character again they will load when slick inits
+			search(item, '').then( (data) => {
+				if(data) {
+					let items = data.results || data.items;
+					if(items) {
+						items.forEach( (e) => {
+							if(e.image || e.id.videoId) {
+								slick_container.slick('slickAdd', builder(e));
+							}
+						});
+					}
+				}	
+			})
+			.catch( (msg) => {
+				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
+			});
+		});	
+	};
+
 	this.gslick = (data, container, builder) => {
 		if(container.hasClass('slick-initialized')) container.slick('unslick');
 
@@ -95,10 +126,10 @@ const Google = () => {
 
 
 const GoogleImages = ( () => {
-	const maxCalls = 2; // TODO
 	const container = $('.google-image-slick');
 	let cache = [];
 
+	// Import helper functions
 	Google.call(this);
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
@@ -124,41 +155,13 @@ const GoogleImages = ( () => {
 				`</div>`;
 	};
 
-	const display = (item) => {
-		if(item===undefined || item.results.length===0) {
-			$('.google-image-container').addClass('hidden');
-			return;
-		}
-		$('.google-image-container').removeClass('hidden');
-
-    	gslick(item.results, container, buildImageHTML);
-
-		// On before slide change
-		container.on('beforeChange', function(event) {
-			// Attempt to fetch more results, then add them to the slick
-			// this will cache the items; if the user selects this character again they will load when slick inits
-			imageSearch(item, '').then( (data) => {
-				let items = data.items || data.results;
-				if(items) {
-					items.forEach( (e) => {
-						if(e.image) {
-							container.slick('slickAdd', buildImageHTML(e));
-						}
-					});
-				}			
-			})
-			.catch( (msg) => {
-				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
-			});
-		});
-	};
 	// Entry point - the first Google search for a new character result
 	return {
 		query: (q) => {
 			// If we have this item cached, return that
 			let item = getCacheItem(q, cache); 
 			if(item) {
-				display(item);
+				display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
 			}
 			else {
 				// No cached result - call API from scratch
@@ -170,7 +173,8 @@ const GoogleImages = ( () => {
 				};
 				cache.push(item);
 				imageSearch(item, 'cache').then( (i) => {
-					display(i);
+					display(i, $('.google-image-container'), container, buildImageHTML, imageSearch);
+					//display(i);
 				}), (msg) => { console.log('nocache reject',msg); };
 			}
 		}
@@ -178,10 +182,10 @@ const GoogleImages = ( () => {
 })();
 
 const YouTube = ( () => {
-	const maxCalls = 2; // TODO
 	const container = $('.youtube-video-slick');
 	let cache = [];
 
+	// Import helper functions
 	Google.call(this);
 
 	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
@@ -195,8 +199,7 @@ const YouTube = ( () => {
 		    safeSearch: 'moderate',
 		    q: cacheItem.query
 		}
-		if(cacheItem.token!=='') ytQuery.pageToken = cacheItem.token; // TODO this might not be adding the right one? might have to track one for the whole object?
-		// Probably not this simple? idk TODO
+		if(cacheItem.token!=='') ytQuery.pageToken = cacheItem.token;
 		return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
 	};
 
@@ -215,41 +218,13 @@ const YouTube = ( () => {
 				`</div>`;
 	};
 
-	const display = (item) => {
-		if(item===undefined || item.results.length===0) {
-			$('.youtube-video-container').addClass('hidden');
-			return;
-		}
-		$('.youtube-video-container').removeClass('hidden');
-
-    	gslick(item.results, container, buildVideoHTML);
-
-    	// On before slide change
-		container.on('beforeChange', function(event) {
-			// Attempt to fetch more results, then add them to the slick
-			// this will cache the items; if the user selects this character again they will load when slick inits
-			videoSearch(item, '').then( (data) => {
-				let items = data.results || data.items;
-				if(items) {
-					items.forEach( (e) => {
-						if(e.id.videoId) {
-							container.slick('slickAdd', buildVideoHTML(e));
-						}
-					});
-				}			
-			})
-			.catch( (msg) => {
-				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
-			});
-		});	
-	}
-
 	return {
 		query: (q) => {
 			// If we have this item cached, return that
 			let item = getCacheItem(q, cache); 
 			if(item) {
-				display(item);
+				// display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
+				display(item, $('.youtube-video-container'), container, buildVideoHTML, videoSearch);
 			}
 			else {
 				// No cached result - call API from scratch
@@ -262,7 +237,8 @@ const YouTube = ( () => {
 				};
 				cache.push(item);
 				videoSearch(item, 'cache').then( (i) => {
-					display(i);
+					// display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
+					display(i, $('.youtube-video-container'), container, buildVideoHTML, videoSearch);
 				}), (msg) => { console.log('nocache reject',msg); };
 			}
 		}
