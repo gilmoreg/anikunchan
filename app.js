@@ -122,11 +122,33 @@ const Google = () => {
 			]
 		});
 	};
+
+	this.fetchAndDisplay = (q, cache, container, slick_container, builder, search) => {
+		// If we have this item cached, return that
+		let item = this.getCacheItem(q, cache); 
+		if(item) {
+			this.display(item, container, slick_container, builder, search);
+		}
+		else {
+			// No cached result - call API from scratch
+			item = {
+				query: q,
+				expire: Date.now()+1.08e7, // 3 hours in milliseconds
+				numAPICalls: 0,
+				results: []
+			};
+			cache.push(item);
+			search(item, 'cache').then( (i) => {
+				display(i, container, slick_container, builder, search);
+			}), (msg) => { console.log('nocache reject',msg); };
+		}
+	};
 }
 
 
 const GoogleImages = ( () => {
-	const container = $('.google-image-slick');
+	const container = $('.google-image-container');
+	const slick_container = $('.google-image-slick');
 	let cache = [];
 
 	// Import helper functions
@@ -143,7 +165,6 @@ const GoogleImages = ( () => {
 			safe: 'medium',
 			start: cacheItem.numAPICalls*10+1
 		}
-		// Probably not this simple? idk TODO
 		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
 	};
 
@@ -155,34 +176,16 @@ const GoogleImages = ( () => {
 				`</div>`;
 	};
 
-	// Entry point - the first Google search for a new character result
 	return {
 		query: (q) => {
-			// If we have this item cached, return that
-			let item = getCacheItem(q, cache); 
-			if(item) {
-				display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
-			}
-			else {
-				// No cached result - call API from scratch
-				item = {
-					query: q,
-					expire: Date.now()+1.08e7, // 3 hours in milliseconds
-					numAPICalls: 0,
-					results: []
-				};
-				cache.push(item);
-				imageSearch(item, 'cache').then( (i) => {
-					display(i, $('.google-image-container'), container, buildImageHTML, imageSearch);
-					//display(i);
-				}), (msg) => { console.log('nocache reject',msg); };
-			}
+			fetchAndDisplay(q, cache, container, slick_container, buildImageHTML, imageSearch);
 		}
 	}
 })();
 
 const YouTube = ( () => {
-	const container = $('.youtube-video-slick');
+	const container = $('.youtube-video-container');
+	const slick_container = $('.youtube-video-slick');
 	let cache = [];
 
 	// Import helper functions
@@ -220,27 +223,7 @@ const YouTube = ( () => {
 
 	return {
 		query: (q) => {
-			// If we have this item cached, return that
-			let item = getCacheItem(q, cache); 
-			if(item) {
-				// display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
-				display(item, $('.youtube-video-container'), container, buildVideoHTML, videoSearch);
-			}
-			else {
-				// No cached result - call API from scratch
-				item = {
-					query: q,
-					expire: Date.now()+1.08e7, // 3 hours in milliseconds
-					numAPICalls: 0,
-					token: '',
-					results: []
-				};
-				cache.push(item);
-				videoSearch(item, 'cache').then( (i) => {
-					// display(item, $('.google-image-container'), container, buildImageHTML, imageSearch);
-					display(i, $('.youtube-video-container'), container, buildVideoHTML, videoSearch);
-				}), (msg) => { console.log('nocache reject',msg); };
-			}
+			fetchAndDisplay(q, cache, container, slick_container, buildVideoHTML, videoSearch);
 		}
 	};
 })();
