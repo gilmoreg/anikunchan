@@ -265,9 +265,9 @@ const Anilist = ( () => {
 	const recursiveSearch = (query, set, callback) => {
 		anilistCharSearch(query).then( (data) => { 
 			if(data === undefined || data.error) {
+				hideSpinner();
 				callback();
 				return;
-				// TODO Need to stop the spinner
 			}
 			data = data.filter( (i) => {
 				if(i.name_first) return true;
