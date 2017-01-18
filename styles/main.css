@@ -83,7 +83,8 @@ nav input {
 }
 
 body {
-	background: radial-gradient(ellipse at center, rgba(126,206,253,1) 0%,rgba(88,192,252,1) 100%);
+	background: radial-gradient(ellipse at center, rgba(219,240,252,1) 0%,rgba(33,133,197,1) 100%);
+	background-attachment: fixed;
 }
 
 .app {
@@ -141,7 +142,7 @@ ul {
 }
 
 .portrait, .summary, .google-image-container, .youtube-video-container, .appears-in, .links {
-	background-color: rgba(255,246,229,0.8);
+	background-color: rgba(255,246,229,0.7);
 	border-radius: 5px;
 }
 
@@ -211,7 +212,7 @@ ul {
 	margin-left: auto;
 }
 
-.gimage:hover, .ytvid:hover {
+.gimage:hover, .ytvid:hover, .ani {
 	background-color: #7ECEFD;
 }
 
