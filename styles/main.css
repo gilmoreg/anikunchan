@@ -1,6 +1,17 @@
 * {
-  box-sizing: border-box;
+	box-sizing: border-box;
 	font-family: 'Open Sans';
+	color: #3E454C;
+}
+
+h1, h2, h5 {
+	color: #FF7F66;
+	font-family: 'Carter One';
+}
+
+h2 {
+	margin-top: 0px;
+	margin-bottom: 0px;
 }
 
 nav {
@@ -21,6 +32,7 @@ nav .logo {
 nav h1 {
 	font-size: 2.5em;
 	margin-top: 0.5em;
+	/*color: #3E454C;*/
 }
 
 nav .search-box {
@@ -89,6 +101,12 @@ body {
 	text-align: center;
 }
 
+.portrait h1, .portrait h5 {
+	font-family: 'Open Sans';
+	color: #3E454C;
+	font-weight: bold;
+}
+
 .portrait {
 	padding: 10px 20px 10px 20px;
 	background-color: #ebebeb;
@@ -106,7 +124,6 @@ body {
 .appears-in, .links {
     margin: 5px;
     padding: 5px 5px 1px 5px;
-    background-color: #ebebeb;
 }
 
 .appears-in-list, .links-list {
@@ -122,17 +139,18 @@ ul {
 .summary, .google-image-container, .youtube-video-container {
 	margin-top: 5px;
 	padding: 10px;
-	background-color: #ebebeb;
+}
+
+.portrait, .summary, .google-image-container, .youtube-video-container, .appears-in, .links {
+	background-color: rgba(255,246,229,0.9);
+	border-radius: 5px;
 }
 
 .google-image-container {
 	position: relative;
 }
 
-h2 {
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
+
 
 .character-data {
 	padding-bottom: 50px;
@@ -173,6 +191,7 @@ h2 {
 	padding: 10px;
 	background-color: white;
 	margin: 5px;
+	border-radius: 5px;
 }
 
 .yt-thumb {
@@ -200,7 +219,7 @@ h2 {
 }
 
 .gimage:hover, .ytvid:hover {
-	background-color: #fff8cc;
+	background-color: #7ECEFD;
 }
 
 .search {
