@@ -3,7 +3,7 @@
 A Thinkful Front End Web Development Capstone Project
 by [Grayson Gilmore](https://github.com/gilmoreg/).
 
-##screenshot
+##Screenshots
 ![anikunchan-ss-montage](https://cloud.githubusercontent.com/assets/18176333/22078537/ed5b02da-dd7d-11e6-9a3a-21f8397af8b5.png)
 
 ##Summary
