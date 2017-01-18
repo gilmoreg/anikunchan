@@ -141,7 +141,7 @@ ul {
 	padding: 10px;
 }
 
-.portrait, .summary, .google-image-container, .youtube-video-container, .appears-in, .links {
+.portrait, .summary, .google-image-container, .youtube-video-container, .appears-in, .links, .aniCharSearch {
 	background-color: rgba(255,246,229,0.7);
 	border-radius: 5px;
 }
@@ -212,7 +212,7 @@ ul {
 	margin-left: auto;
 }
 
-.gimage:hover, .ytvid:hover, .ani {
+.gimage:hover, .ytvid:hover, .aniCharSearch:hover {
 	background-color: #7ECEFD;
 }
 
@@ -231,7 +231,6 @@ ul {
 	width: 155px;
 	height: 200px;
 	padding: 10px;
-	background-color: white;
 	margin: 5px;
 }
 
@@ -245,10 +244,6 @@ ul {
 	object-fit: contain;
 }
 
-.aniCharSearch:hover {
-	background-color: #fff8cc;
-}
-
 .ani-search-name {
 	white-space: nowrap;
 	overflow: hidden;
@@ -259,11 +254,12 @@ ul {
 }
 
 .toggle-results:hover .fa-chevron-down {
-	color: #fff8cc;
+	color: #7ECEFD;
 	cursor: pointer;
 }
 
 .fa-chevron-down {
+	color: #FF7F66;
 	transition: all .3s;
 }
 
