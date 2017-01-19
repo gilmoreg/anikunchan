@@ -410,7 +410,7 @@ const Search = ( () => {
 
 	const renderSearch = (data) => {
 		if(data===undefined || data.error) {
-			$('.al-search-results').html("No results");
+			$('.al-search-results').html('<h2 style="padding: 10px;">No results</h2>');
 			hideSpinner();
 			return;
 		}
