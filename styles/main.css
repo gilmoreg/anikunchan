@@ -172,10 +172,6 @@ ul {
 	border-radius: 5px;
 }
 
-.right-col {
-	padding-bottom: 50px;
-}
-
 .pagination {
 	text-align: center;
 	padding-top: 10px;
@@ -383,6 +379,19 @@ ul {
 .featherlight-loading .featherlight-inner {
   display: none;
 }
+
+footer {
+	font-size: 9px;
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+footer p {
+	text-align: center;
+	margin-top: 2px;
+	margin-bottom: 2px;
+}
+
 
 @media (min-width: 1440px) {
 	.app, .search {
