@@ -32,7 +32,6 @@ nav .logo {
 nav h1 {
 	font-size: 2.5em;
 	margin-top: 0.5em;
-	/*color: #3E454C;*/
 }
 
 nav .search-box {
@@ -113,12 +112,18 @@ body {
 	margin: 5px;
 }
 
-.portrait-image {
-	
-}
-
 .portrait-image img {
 	width: 100%;
+}
+
+li a {
+	color: #2185C5;
+	text-decoration: none;
+}
+
+li a:hover {
+	color: #FF7F66;
+	text-decoration: underline;
 }
 
 .appears-in, .links {
@@ -156,10 +161,10 @@ ul {
 }
 
 .nav-arrow {
-  color: grey;
-  display: inline-block;
-  padding-left: 10px;
-  padding-right: 10px;
+	color: grey;
+	display: inline-block;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 .youtube-videos, .googleimages {
