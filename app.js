@@ -319,7 +319,10 @@ const Anilist = ( () => {
 			getAnilistToken().then( (data) => {
 				if(data) anilistAccessToken = data;
 				recursiveSearch(query,[],callback);
-			}, (msg) => { console.log('err queryAnilist',msg); });
+			}, (msg) => { 
+				$('.al-search-results').html('<h2 style="padding: 10px;">There was an error contacting the database. Please try again later!</h2>');
+				hideSpinner();
+			});
 		},
 		render: (data) => {
 			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
