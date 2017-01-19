@@ -116,6 +116,17 @@ body {
 	width: 100%;
 }
 
+ul {
+	list-style: none;
+}
+
+li::before {
+	font-family: FontAwesome;
+	content: "\f0da";
+	margin-left: -10px;
+	margin-right: 5px;
+}
+
 li a {
 	color: #2185C5;
 	text-decoration: none;
