@@ -281,7 +281,7 @@ const Anilist = ( () => {
 			else {
 				callback(set);
 			}
-		}, (err) => { console.log('recursiveSearch err',err); });
+		}, (err) => { displayError('<h2 style="padding: 10px">There was an error contacting the server. Please try again later!</h2>'); });
 	}
 
 	const anilistCharPage = (id) => {
@@ -413,7 +413,7 @@ const Search = ( () => {
 
 	const renderSearch = (data) => {
 		if(data===undefined || data.error) {
-			$('.al-search-results').html('<h2 style="padding: 10px;">No results</h2>');
+			displayError('<h2 style="padding: 10px;">No results</h2>');
 			hideSpinner();
 			return;
 		}
@@ -524,6 +524,11 @@ const imgError = (image) => {
     image.onerror = "";
     image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
     return true;
+}
+
+const displayError = (html) => {
+	$('.al-search-results').html(html);
+	hideSpinner();
 }
 
 $(document).ready(function() {
