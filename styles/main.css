@@ -116,11 +116,11 @@ body {
 	width: 100%;
 }
 
-ul {
+.left ul {
 	list-style: none;
 }
 
-li::before {
+.left li::before {
 	font-family: FontAwesome;
 	content: "\f0da";
 	margin-left: -10px;
