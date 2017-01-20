@@ -89,7 +89,12 @@ const Google = () => {
 	};
 
 	this.gslick = (data, container, builder) => {
-		if(container.hasClass('slick-initialized')) container.slick('unslick');
+		if(container.hasClass('slick-initialized')) {
+			container.slick('unslick');
+			// Technically unslick should remove this event handler but in some cases it was persisting
+			// leading to previous search results appearing with newer ones
+			container.off('beforeChange');
+		}
 
     	let html = '';
     	data.forEach( (e) => {
