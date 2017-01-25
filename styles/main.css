@@ -240,14 +240,13 @@ ul {
 
 .search {
 	background: radial-gradient(ellipse at center, rgba(33,133,197,1) 0%,rgba(97,156,191,1) 100%);
-	margin: 0 auto;
+	display: flex;
+	justify-content: center;
 }
 
 .al-search-results {
 	max-width: 1660px;
 	text-align: center;
-	justify-content: space-around;
-	flex-flow: row wrap;
 }
 
 .aniCharSearch {
