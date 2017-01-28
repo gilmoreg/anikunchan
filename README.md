@@ -37,6 +37,9 @@ Particular elements will be hidden if no data are available. Search results are 
 * Further content is obtained from Google Images (via the [Custom Search Engine API](https://developers.google.com/custom-search/)) and [YouTube](https://developers.google.com/youtube/v3/) and displayed. The user can paginate these results.
 * The site is responsive and will stack elements on a smaller screen.
 
+## Development Roadmap
+* Implement the ability to search for an anime title and then choose from the characters in that series.
+
 ## Known Issues
 * Due to limitations with Featherlight, Youtube videos are not fully responsive when played; their size is fixed by the width of the window when the search was performed.
 
