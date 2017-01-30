@@ -319,6 +319,7 @@ const Anilist = ( () => {
 			anilistPage = 1;
 			if(query.length<2) {
 				alert('Please enter at least 2 characters.');
+				hideSpinner();
 				return;
 			}
 			getAnilistToken().then( (data) => {
