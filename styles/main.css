@@ -247,6 +247,7 @@ ul {
 .al-search-results {
 	max-width: 1660px;
 	text-align: center;
+	margin: 0 auto;
 }
 
 .aniCharSearch {
