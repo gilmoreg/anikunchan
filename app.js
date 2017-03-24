@@ -163,8 +163,8 @@ const GoogleImages = ( () => {
 	const imageSearch = (cacheItem, returnType) => {
 		const gQuery = {
 			q: cacheItem.query,
-			key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-			cx: '017818390200612997677:nulntbij5kc',
+			key: 'AIzaSyCXSfgFgX-5Um_4lmIh8jsjvpw7bMILLyU',
+			cx: '017818390200612997677:x8nzuivnlnw',
 			searchType: 'image',
 			num: 10, // Upper limit in Google CSE
 			safe: 'medium',
