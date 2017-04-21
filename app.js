@@ -241,17 +241,17 @@ const Anilist = ( () => {
 	const getAnilistToken = () => {
 		// Send POST to anilist API for client credentials token
 		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
-		// These tokens expire after 1 hour - giving myself 20 seconds leeway
+		// These tokens expire after 1 hour - giving 20 seconds leeway
 		return new Promise( (resolve, reject) => {
-			if((Date.now()/1000) < (anilistAccessToken.expires-20)) resolve(); 
-			const anilistAuthTokenPost = anilistEndPoint + 'auth/access_token?grant_type=client_credentials&client_id=solitethos-acaip&client_secret=gBg2dYIxJ3FOVuYPOGgHPGKHZ';
-			$.post(anilistAuthTokenPost)
-			.done( (data) => {
-				resolve(data);
+			if (anilistAccessToken.expires &&
+				((Date.now()/1000) < (anilistAccessToken.expires-20))) resolve();
+			const anilistAuthTokenPost = 'https://ehcue5w91c.execute-api.us-east-1.amazonaws.com/dev/token';
+			$.get(anilistAuthTokenPost)
+			.done((res) => {
+				anilistAccessToken = JSON.parse(res);
+				resolve();
 			})
-			.fail( (msg) => {
-				reject(msg);
-			});
+			.fail(msg => reject(msg));
 		});
 	}
 
@@ -307,9 +307,10 @@ const Anilist = ( () => {
 
 	return {
 		getCharacterData: (id, callback) => {
-			getAnilistToken().then( (data) => {
-				if(data) anilistAccessToken = data;
-				anilistCharPage(id).then( (data) => {
+			getAnilistToken()
+			.then(() => {
+				anilistCharPage(id)
+				.then((data) => {
 					callback(data);
 				});
 			})
@@ -322,8 +323,8 @@ const Anilist = ( () => {
 				hideSpinner();
 				return;
 			}
-			getAnilistToken().then( (data) => {
-				if(data) anilistAccessToken = data;
+			getAnilistToken()
+			.then(() => {
 				recursiveSearch(query,[],callback);
 			}, (msg) => { 
 				$('.al-search-results').html('<h2 style="padding: 10px;">There was an error contacting the database. Please try again later!</h2>');
@@ -364,12 +365,8 @@ const Anilist = ( () => {
 				$('.appears-in').addClass('hidden');	
 			}
 		},
-		getName: (data) => {
-			return name(data);
-		},
-		getAnime: (data) => {
-			return animeTitle(data);
-		}
+		getName: data => name(data),
+		getAnime: data => animeTitle(data),
 	}
 })();
 
