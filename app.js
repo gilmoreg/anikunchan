@@ -378,42 +378,42 @@ const Search = (() => {
     return pairs;
   };
 
-  const wordLetterPairs = (str) =>  {
-      let allPairs = [];
-      // Tokenize the string and put the tokens/words into an array
-      let words = str.split('\\s');
-      words.forEach( (w) => {
+  const wordLetterPairs = (str) => {
+    const allPairs = [];
+    // Tokenize the string and put the tokens/words into an array
+    const words = str.split('\\s');
+    words.forEach((w) => {
       const pairsInWord = letterPairs(w);
-      pairsInWord.forEach( () => {
+      pairsInWord.forEach(() => {
         allPairs.push(w);
       });
-      })
-      return allPairs;
-  }
+    });
+    return allPairs;
+  };
 
   const score = (str1, str2) => {
-    if(typeof str1 !== 'string' || typeof str2 !== 'string') {
+    if (typeof str1 !== 'string' || typeof str2 !== 'string') {
       return 0;
     }
-    let pairs1 = wordLetterPairs(str1.toUpperCase());
+    const pairs1 = wordLetterPairs(str1.toUpperCase());
     let pairs2 = wordLetterPairs(str2.toUpperCase());
     let intersection = 0;
-    let	union = pairs1.length + pairs2.length;
-    
-    pairs1.forEach( (p1) => {
-      pairs2 = pairs2.filter( (p2) => {
-        if(p1===p2) {
-          intersection++;
+    const union = pairs1.length + pairs2.length;
+
+    pairs1.forEach((p1) => {
+      pairs2 = pairs2.filter((p2) => {
+        if (p1 === p2) {
+          intersection += 1;
           return false;
         }
         return true;
       });
     });
-    return (2.0*intersection)/union;
-  }
+    return (2.0 * intersection) / union;
+  };
 
   const renderSearch = (data) => {
-    if(data===undefined || data.error) {
+    if (data === undefined || data.error) {
       displayError('<h2 style="padding: 10px;">No results</h2>');
       hideSpinner();
       return;
@@ -424,17 +424,16 @@ const Search = (() => {
 
     const query = $('#al-query').val().trim();
 
-    data = data.filter( (a) => {
-      if(a.name_first) return true;
-      else return false;
+    data = data.filter((a) => {
+      if (a.name_first) return true;
+      return false;
     });
 
-    data.sort( (a,b) => {
-      return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
-    });
+    data.sort((a, b) =>
+      score(Anilist.getName(b), query) - score(Anilist.getName(a), query));
 
-    data.forEach( (element) => {
-      html+=buildSearchResult(element);
+    data.forEach((element) => {
+      html += buildSearchResult(element);
     });
 
     $('.al-search-results').html(html);
@@ -443,20 +442,20 @@ const Search = (() => {
       toggleResults();
       Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
     });
-  }
+  };
 
   const buildSearchResult = (element) => {
     let name = element.name_first;
-    if(element.name_last) name += ' ' + element.name_last;
+    if (element.name_last) name += ` ${element.name_last}`;
     return (
       `<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
-        `<div class="ani-search-thumb">` +
+        '<div class="ani-search-thumb">' +
           `<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
-        `</div>` +
+        '</div>' +
         `<div class="ani-search-name">${name}</div>` +
-      `</div>`
+      '</div>'
     );
-  }
+  };
 
   return {
     search: () => {
@@ -467,71 +466,70 @@ const Search = (() => {
       const query = $('#al-query').val().trim();
       Anilist.characterSearch(query, renderSearch);
     },
-
-  }
+  };
 })();
 
-const CharacterPage = ( () => {
-	const setLinks = (query) => {
-		let q = encodeURIComponent(query);
-		let html = '';
-		html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
-		html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
-		html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
-		html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
-		html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
-		$('.links-list').html(html);
-	}
+const CharacterPage = (() => {
+  const setLinks = (query) => {
+    const q = encodeURIComponent(query);
+    let html = '';
+    html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
+    html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
+    html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
+    html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
+    html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
+    $('.links-list').html(html);
+  };
 
-	return {
-		createPage: (data) => {
-			Anilist.render(data);
-			const query = Anilist.getName(data) + ' ' + Anilist.getAnime(data);
-			YouTube.query(query);
-			GoogleImages.query(query);
-			setLinks(query);
-			$('.app').removeClass('hidden');
-		}
-	}
-})();	
+  return {
+    createPage: (data) => {
+      Anilist.render(data);
+      const query = `${Anilist.getName(data)} ${Anilist.getAnime(data)}`;
+      YouTube.query(query);
+      GoogleImages.query(query);
+      setLinks(query);
+      $('.app').removeClass('hidden');
+    },
+  };
+})();
 
 const search = () => {
-	showResults();
-	showSpinner();
-	Search.performSearch();
-	$('#al-query').blur();
-}
+  showResults();
+  showSpinner();
+  Search.performSearch();
+  $('#al-query').blur();
+};
 
 const toggleResults = () => {
-	$('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
-	$('.search').stop().slideToggle();
-}
+  $('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
+  $('.search').stop().slideToggle();
+};
 
 const showResults = () => {
-	$('.fa-chevron-down').removeClass('js-chevron-down-closestate');
-	$('.search').stop().show();
-}
+  $('.fa-chevron-down').removeClass('js-chevron-down-closestate');
+  $('.search').stop().show();
+};
 
 const showSpinner = () => {
-	$('.search-button').html('<div class="spinner"></div>');
-}
+  $('.search-button').html('<div class="spinner"></div>');
+};
 
 const hideSpinner = () => {
-	$('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
-}
+  $('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
+};
 
 const imgError = (image) => {
-    image.onerror = "";
-    image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
-    return true;
-}
+  image.onerror = '';
+  image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
+  return true;
+};
 
 const displayError = (html) => {
-	$('.al-search-results').html(html);
-	hideSpinner();
-}
+  $('.al-search-results').html(html);
+  hideSpinner();
+};
 
-$(document).ready(function() {
-	$.featherlight.defaults.closeOnClick = 'anywhere';
-	$('#al-query').focus();
+$(document).ready(() => {
+  $.featherlight.defaults.closeOnClick = 'anywhere';
+  $('#al-query').focus();
 });
