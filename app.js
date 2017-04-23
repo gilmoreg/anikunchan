@@ -32,7 +32,7 @@ $(document).ready(() => {
   $('#al-query').focus();
 });
 
-const Google = () => {
+const Google = (() => {
   const maxCalls = 2;
 
   const googleAPICall = (endpoint, gQuery, item) =>
@@ -43,6 +43,7 @@ const Google = () => {
         resolve(data);
       })
       .fail((msg) => {
+        console.log('rejecting Google API Call', msg);
         reject(msg);
       });
     });
@@ -145,16 +146,22 @@ const Google = () => {
       }
       return new Promise((resolve, reject) => {
         googleAPICall(endpoint, gQuery, cacheItem)
-        .then((data) => {
+        .then((res) => {
+          let data;
+          if (res.body) data = res.body;
+          else data = res;
+          console.log('googleSearch data', data);
           if (data.items) {
             cacheItem.results = cacheItem.results.concat(data.items);
             if (returnType === 'cache') resolve(cacheItem);
             else resolve(data);
           } else {
+            console.log('googleSearch rejecting: data.items undefined');
             reject(data);
           }
         })
         .catch((msg) => {
+          console.log('googleSearch rejecting', msg);
           reject(msg);
         });
       });
@@ -181,7 +188,7 @@ const Google = () => {
       }
     },
   };
-};
+})();
 
 
 const GoogleImages = (() => {
@@ -194,14 +201,9 @@ const GoogleImages = (() => {
   const imageSearch = (cacheItem, returnType) => {
     const gQuery = {
       q: cacheItem.query,
-      key: 'AIzaSyCXSfgFgX-5Um_4lmIh8jsjvpw7bMILLyU',
-      cx: '017818390200612997677:x8nzuivnlnw',
-      searchType: 'image',
-      num: 10, // Upper limit in Google CSE
-      safe: 'medium',
       start: (cacheItem.numAPICalls * 10) + 1,
     };
-    return Google.googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
+    return Google.googleSearch(cacheItem, returnType, gQuery, 'https://ytjv79nzl4.execute-api.us-east-1.amazonaws.com/dev/image/');
   };
 
   const buildImageHTML = e =>
@@ -222,9 +224,6 @@ const YouTube = (() => {
   const container = $('.youtube-video-container');
   const slickContainer = $('.youtube-video-slick');
   const cache = [];
-
-  // Import helper functions
-  Google.call(this);
 
   // returnType is 'cache' to return the whole cacheItem
   // any other value returns only the results from the query
@@ -277,7 +276,7 @@ const Anilist = (() => {
     new Promise((resolve, reject) => {
       if (anilistAccessToken.expires &&
         ((Date.now() / 1000) < (anilistAccessToken.expires - 20))) resolve();
-      const anilistAuthTokenPost = 'https://ehcue5w91c.execute-api.us-east-1.amazonaws.com/dev/token';
+      const anilistAuthTokenPost = 'https://ytjv79nzl4.execute-api.us-east-1.amazonaws.com/dev/token';
       $.get(anilistAuthTokenPost)
       .done((res) => {
         anilistAccessToken = JSON.parse(res);
