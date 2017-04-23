@@ -1,7 +1,41 @@
+const toggleResults = () => {
+  $('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
+  $('.search').stop().slideToggle();
+};
+
+const showResults = () => {
+  $('.fa-chevron-down').removeClass('js-chevron-down-closestate');
+  $('.search').stop().show();
+};
+
+const showSpinner = () => {
+  $('.search-button').html('<div class="spinner"></div>');
+};
+
+const hideSpinner = () => {
+  $('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
+};
+
+const imgError = (image) => {
+  image.onerror = '';
+  image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
+  return true;
+};
+
+const displayError = (html) => {
+  $('.al-search-results').html(html);
+  hideSpinner();
+};
+
+$(document).ready(() => {
+  $.featherlight.defaults.closeOnClick = 'anywhere';
+  $('#al-query').focus();
+});
+
 const Google = () => {
   const maxCalls = 2;
 
-  this.googleAPICall = (endpoint, gQuery, item) =>
+  const googleAPICall = (endpoint, gQuery, item) =>
     new Promise((resolve, reject) => {
       item.numAPICalls += 1;
       $.getJSON(endpoint, gQuery)
@@ -13,30 +47,7 @@ const Google = () => {
       });
     });
 
-  this.googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
-    if (cacheItem.numAPICalls > maxCalls) {
-      return new Promise((resolve, reject) => {
-        reject('maxcalls exceeded');
-      });
-    }
-    return new Promise((resolve, reject) => {
-      this.googleAPICall(endpoint, gQuery, cacheItem)
-      .then((data) => {
-        if (data.items) {
-          cacheItem.results = cacheItem.results.concat(data.items);
-          if (returnType === 'cache') resolve(cacheItem);
-          else resolve(data);
-        } else {
-          reject(data);
-        }
-      })
-      .catch((msg) => {
-        reject(msg);
-      });
-    });
-  };
-
-  this.getCacheItem = (q, cache) => {
+  const getCacheItem = (q, cache) => {
     // This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
     // Filter out expired results
     if (cache) {
@@ -54,38 +65,7 @@ const Google = () => {
     return undefined;
   };
 
-  this.display = (item, container, slickContainer, builder, search) => {
-    if (item === undefined || item.results.length === 0) {
-      container.addClass('hidden');
-      return;
-    }
-    container.removeClass('hidden');
-    this.gslick(item.results, slickContainer, builder);
-    // On before slide change
-    slickContainer.on('beforeChange', () => {
-      // Attempt to fetch more results, then add them to the slick
-      // this will cache the items;
-      // if the user selects this character again they will load when slick inits
-      search(item, '')
-      .then((data) => {
-        if (data) {
-          const items = data.results || data.items;
-          if (items) {
-            items.forEach((e) => {
-              if (e.image || e.id.videoId) {
-                slickContainer.slick('slickAdd', builder(e));
-              }
-            });
-          }
-        }
-      })
-      .catch((msg) => {
-        if (msg !== 'maxcalls exceeded') console.log('slickevent reject', msg);
-      });
-    });
-  };
-
-  this.gslick = (data, container, builder) => {
+  const gslick = (data, container, builder) => {
     if (container.hasClass('slick-initialized')) {
       container.slick('unslick');
       // Technically unslick should remove this event handler but in some cases it was persisting
@@ -125,26 +105,81 @@ const Google = () => {
     });
   };
 
-  this.fetchAndDisplay = (q, cache, container, slickContainer, builder, search) => {
-    // If we have this item cached, return that
-    let item = this.getCacheItem(q, cache);
-    if (item) {
-      this.display(item, container, slickContainer, builder, search);
-    } else {
-      // No cached result - call API from scratch
-      item = {
-        query: q,
-        expire: Date.now() + 1.08e7, // 3 hours in milliseconds
-        numAPICalls: 0,
-        results: [],
-      };
-      cache.push(item);
-      search(item, 'cache')
-      .then((i) => {
-        display(i, container, slickContainer, builder, search);
-      })
-      .catch((msg) => { console.log('nocache reject', msg); });
+  const display = (item, container, slickContainer, builder, search) => {
+    if (item === undefined || item.results.length === 0) {
+      container.addClass('hidden');
+      return;
     }
+    container.removeClass('hidden');
+    gslick(item.results, slickContainer, builder);
+    // On before slide change
+    slickContainer.on('beforeChange', () => {
+      // Attempt to fetch more results, then add them to the slick
+      // this will cache the items;
+      // if the user selects this character again they will load when slick inits
+      search(item, '')
+      .then((data) => {
+        if (data) {
+          const items = data.results || data.items;
+          if (items) {
+            items.forEach((e) => {
+              if (e.image || e.id.videoId) {
+                slickContainer.slick('slickAdd', builder(e));
+              }
+            });
+          }
+        }
+      })
+      .catch((msg) => {
+        if (msg !== 'maxcalls exceeded') console.log('slickevent reject', msg);
+      });
+    });
+  };
+
+  return {
+    googleSearch: (cacheItem, returnType, gQuery, endpoint) => {
+      if (cacheItem.numAPICalls > maxCalls) {
+        return new Promise((resolve, reject) => {
+          reject('maxcalls exceeded');
+        });
+      }
+      return new Promise((resolve, reject) => {
+        googleAPICall(endpoint, gQuery, cacheItem)
+        .then((data) => {
+          if (data.items) {
+            cacheItem.results = cacheItem.results.concat(data.items);
+            if (returnType === 'cache') resolve(cacheItem);
+            else resolve(data);
+          } else {
+            reject(data);
+          }
+        })
+        .catch((msg) => {
+          reject(msg);
+        });
+      });
+    },
+    fetchAndDisplay: (q, cache, container, slickContainer, builder, search) => {
+      // If we have this item cached, return that
+      let item = getCacheItem(q, cache);
+      if (item) {
+        display(item, container, slickContainer, builder, search);
+      } else {
+        // No cached result - call API from scratch
+        item = {
+          query: q,
+          expire: Date.now() + 1.08e7, // 3 hours in milliseconds
+          numAPICalls: 0,
+          results: [],
+        };
+        cache.push(item);
+        search(item, 'cache')
+        .then((i) => {
+          display(i, container, slickContainer, builder, search);
+        })
+        .catch((msg) => { console.log('nocache reject', msg); });
+      }
+    },
   };
 };
 
@@ -153,9 +188,6 @@ const GoogleImages = (() => {
   const container = $('.google-image-container');
   const slickContainer = $('.google-image-slick');
   const cache = [];
-
-  // Import helper functions
-  Google.call(this);
 
   // returnType is 'cache' to return the whole cacheItem;
   // any other value returns only the results from the query
@@ -169,7 +201,7 @@ const GoogleImages = (() => {
       safe: 'medium',
       start: (cacheItem.numAPICalls * 10) + 1,
     };
-    return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
+    return Google.googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
   };
 
   const buildImageHTML = e =>
@@ -181,7 +213,7 @@ const GoogleImages = (() => {
 
   return {
     query: (q) => {
-      fetchAndDisplay(q, cache, container, slickContainer, buildImageHTML, imageSearch);
+      Google.fetchAndDisplay(q, cache, container, slickContainer, buildImageHTML, imageSearch);
     },
   };
 })();
@@ -207,14 +239,14 @@ const YouTube = (() => {
       q: cacheItem.query,
     };
     if (cacheItem.token !== '') ytQuery.pageToken = cacheItem.token;
-    return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
+    return Google.googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
   };
 
   const buildVideoHTML = (e) => {
     const snippet = e.snippet;
     let title = snippet.title;
-    if (title.length > 50) title = title.substring(0, 50) + '...';
-    const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width() * 0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
+    if (title.length > 50) title = `${title.substring(0, 50)}...`;
+    const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width() * 0.8}" data-featherlight-iframe-height="${$(window).height() * 0.5}"` +
       'data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"';
     return `<div class="ytvid" id="${e.id.videoId}">` +
           '<div class="yt-thumb">' +
@@ -227,7 +259,7 @@ const YouTube = (() => {
 
   return {
     query: (q) => {
-      fetchAndDisplay(q, cache, container, slickContainer, buildVideoHTML, videoSearch);
+      Google.fetchAndDisplay(q, cache, container, slickContainer, buildVideoHTML, videoSearch);
     },
   };
 })();
@@ -241,6 +273,7 @@ const Anilist = (() => {
     // Send POST to anilist API for client credentials token
     // https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
     // These tokens expire after 1 hour - giving 20 seconds leeway
+    // This is handled by a Serverless AWS Lambda function
     new Promise((resolve, reject) => {
       if (anilistAccessToken.expires &&
         ((Date.now() / 1000) < (anilistAccessToken.expires - 20))) resolve();
@@ -360,11 +393,35 @@ const Anilist = (() => {
         });
         $('.appears-in').removeClass('hidden');
       } else {
-        $('.appears-in').addClass('hidden');	
+        $('.appears-in').addClass('hidden');
       }
     },
     getName: data => name(data),
     getAnime: data => animeTitle(data),
+  };
+})();
+
+const CharacterPage = (() => {
+  const setLinks = (query) => {
+    const q = encodeURIComponent(query);
+    let html = '';
+    html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
+    html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
+    html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
+    html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
+    html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
+    $('.links-list').html(html);
+  };
+
+  return {
+    createPage: (data) => {
+      Anilist.render(data);
+      const query = `${Anilist.getName(data)} ${Anilist.getAnime(data)}`;
+      YouTube.query(query);
+      GoogleImages.query(query);
+      setLinks(query);
+      $('.app').removeClass('hidden');
+    },
   };
 })();
 
@@ -412,6 +469,19 @@ const Search = (() => {
     return (2.0 * intersection) / union;
   };
 
+  const buildSearchResult = (element) => {
+    let name = element.name_first;
+    if (element.name_last) name += ` ${element.name_last}`;
+    return (
+      `<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
+        '<div class="ani-search-thumb">' +
+          `<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
+        '</div>' +
+        `<div class="ani-search-name">${name}</div>` +
+      '</div>'
+    );
+  };
+
   const renderSearch = (data) => {
     if (data === undefined || data.error) {
       displayError('<h2 style="padding: 10px;">No results</h2>');
@@ -444,19 +514,6 @@ const Search = (() => {
     });
   };
 
-  const buildSearchResult = (element) => {
-    let name = element.name_first;
-    if (element.name_last) name += ` ${element.name_last}`;
-    return (
-      `<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
-        '<div class="ani-search-thumb">' +
-          `<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
-        '</div>' +
-        `<div class="ani-search-name">${name}</div>` +
-      '</div>'
-    );
-  };
-
   return {
     search: () => {
       $('.search').removeClass('hidden');
@@ -469,67 +526,9 @@ const Search = (() => {
   };
 })();
 
-const CharacterPage = (() => {
-  const setLinks = (query) => {
-    const q = encodeURIComponent(query);
-    let html = '';
-    html += `<li><a href="https://www.google.com/#q=${q}+site:wikia.com" target="_blank">Wikia</a></li>`;
-    html += `<li><a href="https://en.wikipedia.org/wiki/Special:Search/${query}" target="_blank">Wikipedia</a></li>`;
-    html += `<li><a href="https://www.reddit.com/search?q=${query}" target="_blank">Reddit</a></li>`;
-    html += `<li><a href="http://www.pixiv.net/search.php?s_mode=s_tag&word=${query}" target="_blank">Pixiv</a></li>`;
-    html += `<li><a href="http://www.deviantart.com/browse/all/?section=&global=1&q=${query}" target="_blank">DeviantArt</a></li>`;
-    $('.links-list').html(html);
-  };
-
-  return {
-    createPage: (data) => {
-      Anilist.render(data);
-      const query = `${Anilist.getName(data)} ${Anilist.getAnime(data)}`;
-      YouTube.query(query);
-      GoogleImages.query(query);
-      setLinks(query);
-      $('.app').removeClass('hidden');
-    },
-  };
-})();
-
 const search = () => {
   showResults();
   showSpinner();
   Search.performSearch();
   $('#al-query').blur();
 };
-
-const toggleResults = () => {
-  $('.fa-chevron-down').toggleClass('js-chevron-down-openstate js-chevron-down-closestate');
-  $('.search').stop().slideToggle();
-};
-
-const showResults = () => {
-  $('.fa-chevron-down').removeClass('js-chevron-down-closestate');
-  $('.search').stop().show();
-};
-
-const showSpinner = () => {
-  $('.search-button').html('<div class="spinner"></div>');
-};
-
-const hideSpinner = () => {
-  $('.search-button').html('<i class="fa fa-search" aria-hidden="true"></i>');
-};
-
-const imgError = (image) => {
-  image.onerror = '';
-  image.src='https://cdn.anilist.co/img/dir/character/med/default.jpg';
-  return true;
-};
-
-const displayError = (html) => {
-  $('.al-search-results').html(html);
-  hideSpinner();
-};
-
-$(document).ready(() => {
-  $.featherlight.defaults.closeOnClick = 'anywhere';
-  $('#al-query').focus();
-});

@@ -6,5 +6,8 @@
     "env": {
         "jquery": true,
         "browser": true
+    },
+    "globals": {
+        "marked": true
     }
 }
