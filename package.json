@@ -1,0 +1,25 @@
+{
+  "name": "anikunchan",
+  "version": "1.0.0",
+  "description": "A Thinkful Front End Web Development Capstone Project by [Grayson Gilmore](https://github.com/gilmoreg/).",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gilmoreg/anikunchan.git"
+  },
+  "author": "Grayson Gilmore (gilmoreg@live.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gilmoreg/anikunchan/issues"
+  },
+  "homepage": "https://github.com/gilmoreg/anikunchan#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-config-airbnb-base": "^11.1.3",
+    "eslint-plugin-import": "^2.2.0"
+  }
+}

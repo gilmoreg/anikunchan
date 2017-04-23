@@ -1,236 +1,235 @@
-'use strict';
-/*
-*/
 const Google = () => {
-	const maxCalls = 2; // managing this finite resource; no matter what results, max of 10 calls per query
-	this.googleAPICall = (endpoint, gQuery, item) => {
-		return new Promise( (resolve, reject) => {
-			item.numAPICalls++;
-			$.getJSON(endpoint, gQuery)
-			.done( (data) => {
-				resolve(data);
-			})
-			.fail( (msg) => {
-				reject(msg);
-			});
-		});
-	};
+  const maxCalls = 2;
 
-	this.googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
-		if(cacheItem.numAPICalls > maxCalls) { 
-			return new Promise( (resolve, reject) => {
-				reject('maxcalls exceeded');
-			});
-		}
-		return new Promise( (resolve, reject) => {
-			googleAPICall(endpoint, gQuery, cacheItem).then( (data) => {
-				if(data.items) {
-					cacheItem.results = cacheItem.results.concat(data.items);
-					if(returnType === 'cache') resolve(cacheItem);
-					else resolve(data);
-				}
-				else {
-					reject(data);
-				}
-			})
-			.catch( (msg) => {
-				reject(msg);
-			});
-		});
-	};
+  this.googleAPICall = (endpoint, gQuery, item) =>
+    new Promise((resolve, reject) => {
+      item.numAPICalls += 1;
+      $.getJSON(endpoint, gQuery)
+      .done((data) => {
+        resolve(data);
+      })
+      .fail((msg) => {
+        reject(msg);
+      });
+    });
 
-	this.getCacheItem = (q, cache) => {
-		// This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
-		// Filter out expired results
-		if(cache) {
-			cache = cache.filter( (a) => {
-				if(a.expires < Date.now()) return false;
-				return true;
-			});
+  this.googleSearch = (cacheItem, returnType, gQuery, endpoint) => {
+    if (cacheItem.numAPICalls > maxCalls) {
+      return new Promise((resolve, reject) => {
+        reject('maxcalls exceeded');
+      });
+    }
+    return new Promise((resolve, reject) => {
+      this.googleAPICall(endpoint, gQuery, cacheItem)
+      .then((data) => {
+        if (data.items) {
+          cacheItem.results = cacheItem.results.concat(data.items);
+          if (returnType === 'cache') resolve(cacheItem);
+          else resolve(data);
+        } else {
+          reject(data);
+        }
+      })
+      .catch((msg) => {
+        reject(msg);
+      });
+    });
+  };
 
-			for(let i=0;i<cache.length;i++) {
-				if(cache[i].query === q) {
-					return cache[i];
-				}
-			}
-		}
-		return undefined;
-	};
+  this.getCacheItem = (q, cache) => {
+    // This might not be a beautiful place to put this but it makes sense codeflow-wise (for now)
+    // Filter out expired results
+    if (cache) {
+      const newCache = cache.filter((a) => {
+        if (a.expires < Date.now()) return false;
+        return true;
+      });
 
-	this.display = (item, container, slick_container, builder, search) => {
-		if(item===undefined || item.results.length===0) {
-			container.addClass('hidden');
-			return;
-		}
-		container.removeClass('hidden');
+      for (let i = 0; i < newCache.length; i += 1) {
+        if (newCache[i].query === q) {
+          return newCache[i];
+        }
+      }
+    }
+    return undefined;
+  };
 
-    	this.gslick(item.results, slick_container, builder);
+  this.display = (item, container, slickContainer, builder, search) => {
+    if (item === undefined || item.results.length === 0) {
+      container.addClass('hidden');
+      return;
+    }
+    container.removeClass('hidden');
+    this.gslick(item.results, slickContainer, builder);
+    // On before slide change
+    slickContainer.on('beforeChange', () => {
+      // Attempt to fetch more results, then add them to the slick
+      // this will cache the items;
+      // if the user selects this character again they will load when slick inits
+      search(item, '')
+      .then((data) => {
+        if (data) {
+          const items = data.results || data.items;
+          if (items) {
+            items.forEach((e) => {
+              if (e.image || e.id.videoId) {
+                slickContainer.slick('slickAdd', builder(e));
+              }
+            });
+          }
+        }
+      })
+      .catch((msg) => {
+        if (msg !== 'maxcalls exceeded') console.log('slickevent reject', msg);
+      });
+    });
+  };
 
-    	// On before slide change
-		slick_container.on('beforeChange', function(event) {
-			// Attempt to fetch more results, then add them to the slick
-			// this will cache the items; if the user selects this character again they will load when slick inits
-			search(item, '').then( (data) => {
-				if(data) {
-					let items = data.results || data.items;
-					if(items) {
-						items.forEach( (e) => {
-							if(e.image || e.id.videoId) {
-								slick_container.slick('slickAdd', builder(e));
-							}
-						});
-					}
-				}	
-			})
-			.catch( (msg) => {
-				if(msg!=='maxcalls exceeded') console.log('slickevent reject',msg);
-			});
-		});	
-	};
+  this.gslick = (data, container, builder) => {
+    if (container.hasClass('slick-initialized')) {
+      container.slick('unslick');
+      // Technically unslick should remove this event handler but in some cases it was persisting
+      // leading to previous search results appearing with newer ones
+      container.off('beforeChange');
+    }
 
-	this.gslick = (data, container, builder) => {
-		if(container.hasClass('slick-initialized')) {
-			container.slick('unslick');
-			// Technically unslick should remove this event handler but in some cases it was persisting
-			// leading to previous search results appearing with newer ones
-			container.off('beforeChange');
-		}
+    let html = '';
+    data.forEach((e) => {
+      html += builder(e);
+    });
+    container.html(html);
 
-    	let html = '';
-    	data.forEach( (e) => {
-			html+= builder(e);
-		});
-		container.html(html);
+    container.not('.slick-initialized').slick({
+      slidesToShow: 4,
+      slidesToScroll: 4,
+      dots: true,
+      infinite: false,
+      responsive: [
+        {
+          breakpoint: 1024,
+          settings: {
+            slidesToShow: 3,
+            slidesToScroll: 3,
+            dots: true,
+          },
+        },
+        {
+          breakpoint: 600,
+          settings: {
+            slidesToShow: 2,
+            slidesToScroll: 2,
+            dots: false,
+          },
+        },
+      ],
+    });
+  };
 
-		container.not('.slick-initialized').slick({
-			slidesToShow: 4,
-			slidesToScroll: 4,
-			dots: true,
-			infinite: false,
-			responsive: [
-				{
-					breakpoint: 1024,
-					settings: {
-						slidesToShow: 3,
-						slidesToScroll: 3,
-						dots: true
-					}
-				},
-				{
-					breakpoint: 600,
-					settings: {
-						slidesToShow: 2,
-						slidesToScroll: 2,
-						dots: false
-					}
-			 	}
-			]
-		});
-	};
-
-	this.fetchAndDisplay = (q, cache, container, slick_container, builder, search) => {
-		// If we have this item cached, return that
-		let item = this.getCacheItem(q, cache); 
-		if(item) {
-			this.display(item, container, slick_container, builder, search);
-		}
-		else {
-			// No cached result - call API from scratch
-			item = {
-				query: q,
-				expire: Date.now()+1.08e7, // 3 hours in milliseconds
-				numAPICalls: 0,
-				results: []
-			};
-			cache.push(item);
-			search(item, 'cache').then( (i) => {
-				display(i, container, slick_container, builder, search);
-			}), (msg) => { console.log('nocache reject',msg); };
-		}
-	};
-}
+  this.fetchAndDisplay = (q, cache, container, slickContainer, builder, search) => {
+    // If we have this item cached, return that
+    let item = this.getCacheItem(q, cache);
+    if (item) {
+      this.display(item, container, slickContainer, builder, search);
+    } else {
+      // No cached result - call API from scratch
+      item = {
+        query: q,
+        expire: Date.now() + 1.08e7, // 3 hours in milliseconds
+        numAPICalls: 0,
+        results: [],
+      };
+      cache.push(item);
+      search(item, 'cache')
+      .then((i) => {
+        display(i, container, slickContainer, builder, search);
+      })
+      .catch((msg) => { console.log('nocache reject', msg); });
+    }
+  };
+};
 
 
-const GoogleImages = ( () => {
-	const container = $('.google-image-container');
-	const slick_container = $('.google-image-slick');
-	let cache = [];
+const GoogleImages = (() => {
+  const container = $('.google-image-container');
+  const slickContainer = $('.google-image-slick');
+  const cache = [];
 
-	// Import helper functions
-	Google.call(this);
+  // Import helper functions
+  Google.call(this);
 
-	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
-	const imageSearch = (cacheItem, returnType) => {
-		const gQuery = {
-			q: cacheItem.query,
-			key: 'AIzaSyCXSfgFgX-5Um_4lmIh8jsjvpw7bMILLyU',
-			cx: '017818390200612997677:x8nzuivnlnw',
-			searchType: 'image',
-			num: 10, // Upper limit in Google CSE
-			safe: 'medium',
-			start: cacheItem.numAPICalls*10+1
-		}
-		return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
-	};
+  // returnType is 'cache' to return the whole cacheItem;
+  // any other value returns only the results from the query
+  const imageSearch = (cacheItem, returnType) => {
+    const gQuery = {
+      q: cacheItem.query,
+      key: 'AIzaSyCXSfgFgX-5Um_4lmIh8jsjvpw7bMILLyU',
+      cx: '017818390200612997677:x8nzuivnlnw',
+      searchType: 'image',
+      num: 10, // Upper limit in Google CSE
+      safe: 'medium',
+      start: (cacheItem.numAPICalls * 10) + 1,
+    };
+    return googleSearch(cacheItem, returnType, gQuery, 'https://www.googleapis.com/customsearch/v1');
+  };
 
-	const buildImageHTML = (e) => {
-		return `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` + 
-					`<a href="${e.link}" data-featherlight="image">` + 
-						`<img src="${e.image.thumbnailLink}" onerror="imgError(this)" alt="${e.snippet}">` + 
-					`</a>` + 
-				`</div>`;
-	};
+  const buildImageHTML = e =>
+    `<div class="gimage" link="${e.link}" contextLink="${e.image.contextLink}">` +
+      `<a href="${e.link}" data-featherlight="image">` +
+        `<img src="${e.image.thumbnailLink}" onerror="imgError(this)" alt="${e.snippet}">` +
+      '</a>' +
+    '</div>';
 
-	return {
-		query: (q) => {
-			fetchAndDisplay(q, cache, container, slick_container, buildImageHTML, imageSearch);
-		}
-	}
+  return {
+    query: (q) => {
+      fetchAndDisplay(q, cache, container, slickContainer, buildImageHTML, imageSearch);
+    },
+  };
 })();
 
-const YouTube = ( () => {
-	const container = $('.youtube-video-container');
-	const slick_container = $('.youtube-video-slick');
-	let cache = [];
+const YouTube = (() => {
+  const container = $('.youtube-video-container');
+  const slickContainer = $('.youtube-video-slick');
+  const cache = [];
 
-	// Import helper functions
-	Google.call(this);
+  // Import helper functions
+  Google.call(this);
 
-	// returnType is 'cache' to return the whole cacheItem, any other value returns only the results from the query
-	const videoSearch = (cacheItem, returnType) => {
-		const  ytQuery = {
-	    	part: 'snippet',
-		    key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-		    type: 'video',
-		    maxResults: '10',
-		    videoEmbeddable: true,
-		    safeSearch: 'moderate',
-		    q: cacheItem.query
-		}
-		if(cacheItem.token!=='') ytQuery.pageToken = cacheItem.token;
-		return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
-	};
+  // returnType is 'cache' to return the whole cacheItem
+  // any other value returns only the results from the query
+  const videoSearch = (cacheItem, returnType) => {
+    const ytQuery = {
+      part: 'snippet',
+      key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
+      type: 'video',
+      maxResults: '10',
+      videoEmbeddable: true,
+      safeSearch: 'moderate',
+      q: cacheItem.query,
+    };
+    if (cacheItem.token !== '') ytQuery.pageToken = cacheItem.token;
+    return googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
+  };
 
-	const buildVideoHTML = (e) => {
-		const snippet = e.snippet;
-		let title = snippet.title;
-		if(title.length > 50) title = title.substring(0,50) + '...';
-		const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width()*0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
-			`data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"`;
-		return `<div class="ytvid" id="${e.id.videoId}">` + 
-					`<div class="yt-thumb">`+ 
-						`<a href="https://www.youtube.com/embed/${e.id.videoId}?autoplay=1" ${iframeOptions}>`+
-						`<img src="${snippet.thumbnails.default.url}" alt="${title}"></a>` + 
-					`</div>` + 
-					`<div class="yt-desc">${title}</div>`+ 
-				`</div>`;
-	};
+  const buildVideoHTML = (e) => {
+    const snippet = e.snippet;
+    let title = snippet.title;
+    if(title.length > 50) title = title.substring(0,50) + '...';
+    const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width()*0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
+      `data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"`;
+    return `<div class="ytvid" id="${e.id.videoId}">` + 
+          `<div class="yt-thumb">`+ 
+            `<a href="https://www.youtube.com/embed/${e.id.videoId}?autoplay=1" ${iframeOptions}>`+
+            `<img src="${snippet.thumbnails.default.url}" alt="${title}"></a>` + 
+          `</div>` + 
+          `<div class="yt-desc">${title}</div>`+ 
+        `</div>`;
+  };
 
-	return {
-		query: (q) => {
-			fetchAndDisplay(q, cache, container, slick_container, buildVideoHTML, videoSearch);
-		}
-	};
+  return {
+    query: (q) => {
+      fetchAndDisplay(q, cache, container, slickContainer, buildVideoHTML, videoSearch);
+    }
+  };
 })();
 
 const Anilist = ( () => {
@@ -474,7 +473,6 @@ const Search = ( () => {
 })();
 
 const CharacterPage = ( () => {
-	
 	const setLinks = (query) => {
 		let q = encodeURIComponent(query);
 		let html = '';
