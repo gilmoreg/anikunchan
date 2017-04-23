@@ -226,16 +226,10 @@ const YouTube = (() => {
   // any other value returns only the results from the query
   const videoSearch = (cacheItem, returnType) => {
     const ytQuery = {
-      part: 'snippet',
-      key: 'AIzaSyCTYqRMF86WZ_W4MRPrha8SfozzzbdsIvc',
-      type: 'video',
-      maxResults: '10',
-      videoEmbeddable: true,
-      safeSearch: 'moderate',
       q: cacheItem.query,
     };
     if (cacheItem.token !== '') ytQuery.pageToken = cacheItem.token;
-    return Google.googleSearch(cacheItem, returnType, ytQuery, 'https://www.googleapis.com/youtube/v3/search');
+    return Google.googleSearch(cacheItem, returnType, ytQuery, 'https://ytjv79nzl4.execute-api.us-east-1.amazonaws.com/dev/video');
   };
 
   const buildVideoHTML = (e) => {
