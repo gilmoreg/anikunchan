@@ -213,263 +213,262 @@ const YouTube = (() => {
   const buildVideoHTML = (e) => {
     const snippet = e.snippet;
     let title = snippet.title;
-    if(title.length > 50) title = title.substring(0,50) + '...';
-    const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width()*0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
-      `data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"`;
-    return `<div class="ytvid" id="${e.id.videoId}">` + 
-          `<div class="yt-thumb">`+ 
-            `<a href="https://www.youtube.com/embed/${e.id.videoId}?autoplay=1" ${iframeOptions}>`+
-            `<img src="${snippet.thumbnails.default.url}" alt="${title}"></a>` + 
-          `</div>` + 
-          `<div class="yt-desc">${title}</div>`+ 
-        `</div>`;
+    if (title.length > 50) title = title.substring(0, 50) + '...';
+    const iframeOptions = `data-featherlight="iframe" data-featherlight-iframe-width="${$(window).width() * 0.8}" data-featherlight-iframe-height="${$(window).height()*0.5}"` + 
+      'data-featherlight-iframe-max-width="640px" data-featherlight-iframe-max-height="640px"';
+    return `<div class="ytvid" id="${e.id.videoId}">` +
+          '<div class="yt-thumb">' +
+            `<a href="https://www.youtube.com/embed/${e.id.videoId}?autoplay=1" ${iframeOptions}>` +
+            `<img src="${snippet.thumbnails.default.url}" alt="${title}"></a>` +
+          '</div>' +
+          `<div class="yt-desc">${title}</div>` +
+        '</div>';
   };
 
   return {
     query: (q) => {
       fetchAndDisplay(q, cache, container, slickContainer, buildVideoHTML, videoSearch);
-    }
+    },
   };
 })();
 
-const Anilist = ( () => {
-	const anilistEndPoint = 'https://anilist.co/api/';
-	let anilistAccessToken = {};
-	let anilistPage = 1;
+const Anilist = (() => {
+  const anilistEndPoint = 'https://anilist.co/api/';
+  let anilistAccessToken = {};
+  let anilistPage = 1;
 
-	const getAnilistToken = () => {
-		// Send POST to anilist API for client credentials token
-		// https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
-		// These tokens expire after 1 hour - giving 20 seconds leeway
-		return new Promise( (resolve, reject) => {
-			if (anilistAccessToken.expires &&
-				((Date.now()/1000) < (anilistAccessToken.expires-20))) resolve();
-			const anilistAuthTokenPost = 'https://ehcue5w91c.execute-api.us-east-1.amazonaws.com/dev/token';
-			$.get(anilistAuthTokenPost)
-			.done((res) => {
-				anilistAccessToken = JSON.parse(res);
-				resolve();
-			})
-			.fail(msg => reject(msg));
-		});
-	}
+  const getAnilistToken = () =>
+    // Send POST to anilist API for client credentials token
+    // https://anilist-api.readthedocs.io/en/latest/authentication.html#grant-client-credentials
+    // These tokens expire after 1 hour - giving 20 seconds leeway
+    new Promise((resolve, reject) => {
+      if (anilistAccessToken.expires &&
+        ((Date.now() / 1000) < (anilistAccessToken.expires - 20))) resolve();
+      const anilistAuthTokenPost = 'https://ehcue5w91c.execute-api.us-east-1.amazonaws.com/dev/token';
+      $.get(anilistAuthTokenPost)
+      .done((res) => {
+        anilistAccessToken = JSON.parse(res);
+        resolve();
+      })
+      .fail(msg => reject(msg));
+    });
 
-	const anilistCharSearch = (query) => {
-		return new Promise( (resolve,reject) => {
-			$.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`)
-			.done( (data) => {
-				resolve(data);
-			})
-			.fail( (msg) => {
-				reject(msg);
-			});
-		});
-	}
+  const anilistCharSearch = query =>
+    new Promise((resolve, reject) => {
+      $.get(`${anilistEndPoint}character/search/${query}?page=${anilistPage}&access_token=${anilistAccessToken.access_token}`)
+      .done((data) => {
+        resolve(data);
+      })
+      .fail((msg) => {
+        reject(msg);
+      });
+    });
 
-	const recursiveSearch = (query, set, callback) => {
-		anilistCharSearch(query).then( (data) => { 
-			if(data === undefined || data.error) {
-				hideSpinner();
-				callback();
-				return;
-			}
-			data = data.filter( (i) => {
-				if(i.name_first) return true;
-				return false;
-			});
-			set = set.concat(data);
-			if(data.length>=20) {
-				anilistPage++;
-				recursiveSearch(query, set, callback);
-			}
-			else {
-				callback(set);
-			}
-		}, (err) => { displayError('<h2 style="padding: 10px">There was an error contacting the server. Please try again later!</h2>'); });
-	}
+  const recursiveSearch = (query, set, callback) => {
+    anilistCharSearch(query)
+    .then((data) => {
+      if (data === undefined || data.error) {
+        hideSpinner();
+        callback();
+        return;
+      }
+      data = data.filter((i) => {
+        if (i.name_first) return true;
+        return false;
+      });
+      set = set.concat(data);
+      if (data.length >= 20) {
+        anilistPage += 1;
+        recursiveSearch(query, set, callback);
+      } else {
+        callback(set);
+      }
+    })
+    .catch(() => {
+      displayError('<h2 style="padding: 10px">There was an error contacting the server. Please try again later!</h2>');
+    });
+  };
 
-	const anilistCharPage = (id) => {
-		return Promise.resolve( $.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`) );
-	}
+  const anilistCharPage = id =>
+    Promise.resolve($.get(`${anilistEndPoint}character/${id}/page?access_token=${anilistAccessToken.access_token}`));
 
-	const name = (data) => {
-		let n = data.name_first;
-		if(data.name_last) n += ' ' + data.name_last;
-		return n;
-	}
+  const name = (data) => {
+    let n = data.name_first;
+    if (data.name_last) n += ` ${data.name_last}`;
+    return n;
+  };
 
-	const animeTitle = (data) => {
-		if(data.series_type) return data.title_english || data.title_romaji || data.title_japanese || "";
-		else if(data.anime[0]) return data.anime[0].title_english || data.anime[0].title_romaji || data.anime[0].title_japanese || "";
-		else return "";
-	}
+  const animeTitle = (data) => {
+    if (data.series_type) return data.title_english || data.title_romaji || data.title_japanese || '';
+    else if (data.anime[0]) return data.anime[0].title_english || data.anime[0].title_romaji || data.anime[0].title_japanese || '';
+    return '';
+  };
 
-	return {
-		getCharacterData: (id, callback) => {
-			getAnilistToken()
-			.then(() => {
-				anilistCharPage(id)
-				.then((data) => {
-					callback(data);
-				});
-			})
-			
-		},
-		characterSearch: (query, callback) => {
-			anilistPage = 1;
-			if(query.length<2) {
-				alert('Please enter at least 2 characters.');
-				hideSpinner();
-				return;
-			}
-			getAnilistToken()
-			.then(() => {
-				recursiveSearch(query,[],callback);
-			}, (msg) => { 
-				$('.al-search-results').html('<h2 style="padding: 10px;">There was an error contacting the database. Please try again later!</h2>');
-				hideSpinner();
-			});
-		},
-		render: (data) => {
-			$('.portrait-image').html(`<img src="${data.image_url_lge}">`);
-			$('.char-name').html(name(data));
-			$('.jpn-char-name').html(data.name_japanese);
-			$('.alt-char-name').html(data.name_alt);
-			// anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
-			// Issue: some of these descriptions can be rather long - I might cut them down to a certain length and add an ellipsis
-			let description = marked(data.info.replace(/~!.*?!~*/g, ''));
-			// Stretch goal: show only the first few lines until the user clicks "More"
-			description	+= `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`
-			if(description.length>100) {
-				$('.long-description').html(description);
-				$('.summary').removeClass('hidden');
-			}
-			else {
-				$('.summary').addClass('hidden');	
-			}
+  return {
+    getCharacterData: (id, callback) => {
+      getAnilistToken()
+      .then(() => {
+        anilistCharPage(id)
+        .then((data) => {
+          callback(data);
+        });
+      });
+    },
+    characterSearch: (query, callback) => {
+      anilistPage = 1;
+      if (query.length < 2) {
+        alert('Please enter at least 2 characters.');
+        hideSpinner();
+        return;
+      }
+      getAnilistToken()
+      .then(() => {
+        recursiveSearch(query, [], callback);
+      })
+      .catch(() => {
+        $('.al-search-results').html('<h2 style="padding: 10px;">There was an error contacting the database. Please try again later!</h2>');
+        hideSpinner();
+      });
+    },
+    render: (data) => {
+      $('.portrait-image').html(`<img src="${data.image_url_lge}">`);
+      $('.char-name').html(name(data));
+      $('.jpn-char-name').html(data.name_japanese);
+      $('.alt-char-name').html(data.name_alt);
+      // anilist has ~! and !~ markdowns to hide spoilers, have to filter that out
+      // Issue: some of these descriptions can be rather long
+      // I might cut them down to a certain length and add an ellipsis
+      let description = marked(data.info.replace(/~!.*?!~*/g, ''));
+      // Stretch goal: show only the first few lines until the user clicks "More"
+      description += `(Source: <a href="https://anilist.co/character/${data.id}/" target="_blank">anilist.co</a>)`;
+      if (description.length > 100) {
+        $('.long-description').html(description);
+        $('.summary').removeClass('hidden');
+      } else {
+        $('.summary').addClass('hidden');
+      }
 
-			$('.appears-in-list').empty();			
-			if(data.anime.length>0) {
-				// Sorting anime by start date helps reduce bad Google results (due to OVA/ONAs and shorts sometimes coming first)
-				data.anime.sort( (a,b) => {
-					return a.start_date_fuzzy - b.start_date_fuzzy;
-				});
+      $('.appears-in-list').empty();
+      if (data.anime.length > 0) {
+        // Sorting anime by start date helps reduce bad Google results
+        // (due to OVA/ONAs and shorts sometimes coming first)
+        data.anime.sort((a, b) =>
+          (a.start_date_fuzzy - b.start_date_fuzzy));
 
-				data.anime.forEach((anime) => {
-					$('.appears-in-list').append(`<li><a href="https://anilist.co/anime/${anime.id}" target="_blank">${animeTitle(anime)}</a></li>`);
-				});
-				$('.appears-in').removeClass('hidden');
-			}
-			else {
-				$('.appears-in').addClass('hidden');	
-			}
-		},
-		getName: data => name(data),
-		getAnime: data => animeTitle(data),
-	}
+        data.anime.forEach((anime) => {
+          $('.appears-in-list').append(`<li><a href="https://anilist.co/anime/${anime.id}" target="_blank">${animeTitle(anime)}</a></li>`);
+        });
+        $('.appears-in').removeClass('hidden');
+      } else {
+        $('.appears-in').addClass('hidden');	
+      }
+    },
+    getName: data => name(data),
+    getAnime: data => animeTitle(data),
+  };
 })();
 
-const Search = ( () => {
-	// Relevance search adapted from http://www.catalysoft.com/articles/StrikeAMatch.html
-	const letterPairs = (str) => {
-	   let pairs = [];
-	   for (var i=0; i<(str.length-1); i++) {
-		   pairs.push(str.substring(i,i+2));
-	   }
-	   return pairs;
-	}
+const Search = (() => {
+  // Relevance search adapted from http://www.catalysoft.com/articles/StrikeAMatch.html
+  const letterPairs = (str) => {
+    const pairs = [];
+    for (let i = 0; i < (str.length - 1); i += 1) {
+      pairs.push(str.substring(i, i + 2));
+    }
+    return pairs;
+  };
 
-	const wordLetterPairs = (str) =>  {
-	   let allPairs = [];
-	   // Tokenize the string and put the tokens/words into an array
-	   let words = str.split('\\s');
-	   words.forEach( (w) => {
-			const pairsInWord = letterPairs(w);
-			pairsInWord.forEach( () => {
-				allPairs.push(w);
-			});
-	   })
-	   return allPairs;
-	}
+  const wordLetterPairs = (str) =>  {
+      let allPairs = [];
+      // Tokenize the string and put the tokens/words into an array
+      let words = str.split('\\s');
+      words.forEach( (w) => {
+      const pairsInWord = letterPairs(w);
+      pairsInWord.forEach( () => {
+        allPairs.push(w);
+      });
+      })
+      return allPairs;
+  }
 
-	const score = (str1, str2) => {
-		if(typeof str1 !== 'string' || typeof str2 !== 'string') {
-			return 0;
-		}
-		let pairs1 = wordLetterPairs(str1.toUpperCase());
-		let pairs2 = wordLetterPairs(str2.toUpperCase());
-		let intersection = 0;
-		let	union = pairs1.length + pairs2.length;
-		
-		pairs1.forEach( (p1) => {
-			pairs2 = pairs2.filter( (p2) => {
-				if(p1===p2) {
-					intersection++;
-					return false;
-				}
-				return true;
-			});
-		});
-		return (2.0*intersection)/union;
-	}
+  const score = (str1, str2) => {
+    if(typeof str1 !== 'string' || typeof str2 !== 'string') {
+      return 0;
+    }
+    let pairs1 = wordLetterPairs(str1.toUpperCase());
+    let pairs2 = wordLetterPairs(str2.toUpperCase());
+    let intersection = 0;
+    let	union = pairs1.length + pairs2.length;
+    
+    pairs1.forEach( (p1) => {
+      pairs2 = pairs2.filter( (p2) => {
+        if(p1===p2) {
+          intersection++;
+          return false;
+        }
+        return true;
+      });
+    });
+    return (2.0*intersection)/union;
+  }
 
-	const renderSearch = (data) => {
-		if(data===undefined || data.error) {
-			displayError('<h2 style="padding: 10px;">No results</h2>');
-			hideSpinner();
-			return;
-		}
-		hideSpinner();
-		showResults();
-		let html = '';
+  const renderSearch = (data) => {
+    if(data===undefined || data.error) {
+      displayError('<h2 style="padding: 10px;">No results</h2>');
+      hideSpinner();
+      return;
+    }
+    hideSpinner();
+    showResults();
+    let html = '';
 
-		const query = $('#al-query').val().trim();
+    const query = $('#al-query').val().trim();
 
-		data = data.filter( (a) => {
-			if(a.name_first) return true;
-			else return false;
-		});
+    data = data.filter( (a) => {
+      if(a.name_first) return true;
+      else return false;
+    });
 
-		data.sort( (a,b) => {
-			return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
-		});
+    data.sort( (a,b) => {
+      return score(Anilist.getName(b),query) - score(Anilist.getName(a),query);
+    });
 
-		data.forEach( (element) => {
-			html+=buildSearchResult(element);
-		});
+    data.forEach( (element) => {
+      html+=buildSearchResult(element);
+    });
 
-		$('.al-search-results').html(html);
-		$('.aniCharSearch').on('click', (event) => {
-			event.preventDefault();
-			toggleResults();
-			Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
-		});
-	}
+    $('.al-search-results').html(html);
+    $('.aniCharSearch').on('click', (event) => {
+      event.preventDefault();
+      toggleResults();
+      Anilist.getCharacterData($(event.target).closest('.aniCharSearch').attr('id'), CharacterPage.createPage);
+    });
+  }
 
-	const buildSearchResult = (element) => {
-		let name = element.name_first;
-		if(element.name_last) name += ' ' + element.name_last;
-		return (
-			`<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
-				`<div class="ani-search-thumb">` +
-					`<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
-				`</div>` +
-				`<div class="ani-search-name">${name}</div>` +
-			`</div>`
-		);
-	}
+  const buildSearchResult = (element) => {
+    let name = element.name_first;
+    if(element.name_last) name += ' ' + element.name_last;
+    return (
+      `<div class="col-3 aniCharSearch" id="${element.id}" title="${name}">` +
+        `<div class="ani-search-thumb">` +
+          `<img src="${element.image_url_med}" onerror="imgError(this)" alt="${name}">` +
+        `</div>` +
+        `<div class="ani-search-name">${name}</div>` +
+      `</div>`
+    );
+  }
 
-	return {
-		search: () => {
-			$('.search').removeClass('hidden');
-			$('#al-query').focus();
-		},
-		performSearch: () => {
-			const query = $('#al-query').val().trim();
-			Anilist.characterSearch(query, renderSearch);
-		},
+  return {
+    search: () => {
+      $('.search').removeClass('hidden');
+      $('#al-query').focus();
+    },
+    performSearch: () => {
+      const query = $('#al-query').val().trim();
+      Anilist.characterSearch(query, renderSearch);
+    },
 
-	}
+  }
 })();
 
 const CharacterPage = ( () => {
