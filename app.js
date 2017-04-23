@@ -150,18 +150,15 @@ const Google = (() => {
           let data;
           if (res.body) data = res.body;
           else data = res;
-          console.log('googleSearch data', data);
           if (data.items) {
             cacheItem.results = cacheItem.results.concat(data.items);
             if (returnType === 'cache') resolve(cacheItem);
             else resolve(data);
           } else {
-            console.log('googleSearch rejecting: data.items undefined');
             reject(data);
           }
         })
         .catch((msg) => {
-          console.log('googleSearch rejecting', msg);
           reject(msg);
         });
       });
