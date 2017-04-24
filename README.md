@@ -42,6 +42,5 @@ Particular elements will be hidden if no data are available. Search results are 
 
 ## Known Issues
 * Due to limitations with Featherlight, Youtube videos are not fully responsive when played; their size is fixed by the width of the window when the search was performed.
-* Display of images and videos does not work in Microsoft Edge due to its restrictive cross-origin policies.
 
 
