@@ -3,12 +3,12 @@
 A Thinkful Front End Web Development Capstone Project
 by [Grayson Gilmore](https://github.com/gilmoreg/).
 
-[See the live site here](https://gilmoreg.github.io/anikunchan/).
+[See the live site here](http://anikunchan.gilmoreg.com).
 
-##Screenshots
+## Screenshots
 ![anikunchan-ss-montage](https://cloud.githubusercontent.com/assets/18176333/22078537/ed5b02da-dd7d-11e6-9a3a-21f8397af8b5.png)
 
-##Summary
+## Summary
 Anikunchan enables you to search for your favorite anime characters and then see interesting data about them:
 
 * A portrait
@@ -21,7 +21,7 @@ Anikunchan enables you to search for your favorite anime characters and then see
 
 Particular elements will be hidden if no data are available. Search results are sorted by relevance, and may be redisplayed once hidden.
 
-##Technical
+## Technical
 * This site is entirely browser-side, written in HTML, ES6 Javascript, CSS3, and JQuery. 
 * Additionally, the site uses:
   * [Marked](https://github.com/chjj/marked) to render Markdown in the summary section
